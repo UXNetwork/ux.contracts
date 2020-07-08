@@ -11,6 +11,9 @@
 #include <eosio.system/exchange_state.hpp>
 #include <eosio.system/native.hpp>
 
+#include <eosio.system/ux.hpp>
+#include <eosio.system/resource.hpp>
+
 #include <deque>
 #include <optional>
 #include <string>
@@ -547,6 +550,13 @@ namespace eosiosystem {
          rex_fund_table           _rexfunds;
          rex_balance_table        _rexbalance;
          rex_order_table          _rexorders;
+
+         producer_pay_table       _producer_pay;
+         uxglobal_state_singleton _uxglobal;
+         ux_global_state          _uxgstate;
+         resource_config_singleton _resource_config;
+         resource_config_state    _resource_config_state;
+         feature_toggle_table     _features;
 
       public:
          static constexpr eosio::name active_permission{"active"_n};
@@ -1167,6 +1177,19 @@ namespace eosiosystem {
           */
          [[eosio::action]]
          void setinflation( int64_t annual_rate, int64_t inflation_pay_factor, int64_t votepay_factor );
+
+         // resource actions defined in resource.cpp
+         ACTION initresource(uint16_t dataset_batch_size, uint16_t oracle_consensus_threshold, time_point_sec period_start, uint32_t period_seconds, float initial_value_transfer_rate, float max_pay_constant);
+         ACTION settotalusg(name source, uint64_t total_cpu_us, uint64_t total_net_words, checksum256 all_data_hash, time_point_sec period_start);
+         ACTION addactusg(name source, uint16_t dataset_id, const std::vector<metric>& dataset, time_point_sec period_start);
+         ACTION nextperiod();
+         ACTION claimdistrib(name account);
+         ACTION activatefeat(name feature);
+
+          // resource helper functions defined in resource.cpp
+         void update_votes( const name& voter_name, uint64_t weight );
+         void set_total(uint64_t total_cpu_us, uint64_t total_net_words, time_point_sec period_start);
+         void issue_inflation(time_point_sec period_start);
 
          using init_action = eosio::action_wrapper<"init"_n, &system_contract::init>;
          using setacctram_action = eosio::action_wrapper<"setacctram"_n, &system_contract::setacctram>;
