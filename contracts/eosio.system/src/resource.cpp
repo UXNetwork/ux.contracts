@@ -47,7 +47,7 @@ namespace eosiosystem {
         uint64_t draglimit = _resource_config_state.emadraglimit;
         uint64_t day_count = itr->daycount + 1;
 
-        float VT = pow(2, -(static_cast<double>(day_count) / 365)) * itr->value_transfer_rate;
+        float VT = pow(2, -(static_cast<double>(day_count) / 365)) * _resource_config_state.initial_value_transfer_rate;
 
         float previousAverageCPU = itr->ma_cpu;
         float previousAverageNET = itr->ma_net;
