@@ -60,7 +60,6 @@ namespace eosiosystem {
    {
       uint64_t id;
       uint32_t daycount;
-      float value_transfer_rate;
       uint64_t total_cpu_us;
       uint64_t total_net_words;
       float net_percent_total;
@@ -80,9 +79,7 @@ namespace eosiosystem {
       float inflation_daily;
       asset utility_tokens;
       asset bppay_tokens;
-      asset net_tokens;
       time_point_sec timestamp;
-//      checksum256 all_data_hash;
       uint64_t primary_key() const { return (id); }
    };
 

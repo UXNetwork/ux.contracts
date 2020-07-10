@@ -231,20 +231,16 @@ namespace eosiosystem {
         // calculate inflation amount
         auto utility_tokens = asset(static_cast<int64_t>( (CPU_Pay * double(token_supply.amount))), core_symbol() );
         auto bppay_tokens = asset(static_cast<int64_t>( ((Final_BP_daily) * double(token_supply.amount))), core_symbol() );
-        auto net_tokens = asset(static_cast<int64_t>( (NET_pay * double(token_supply.amount))), core_symbol() );
 
         print(" :: utility_tokens: ");
         print(utility_tokens);
         print(" :: bppay_tokens: ");
         print(bppay_tokens);
-        print(" :: net_tokens: ");
-        print(net_tokens);
 
         u_t.emplace(get_self(), [&](auto &h) {
             h.id = pk;
             h.timestamp = period_start;
             h.daycount = day_count;
-            h.value_transfer_rate = VT;
             h.total_cpu_us = total_cpu_us;
             h.total_net_words = total_net_words;
             h.net_percent_total = net_percent_total;
@@ -264,7 +260,6 @@ namespace eosiosystem {
             h.inflation_daily = Daily_i_U;
             h.utility_tokens = utility_tokens;
             h.bppay_tokens = bppay_tokens;
-            h.net_tokens = net_tokens;
         });
 
     }
@@ -348,7 +343,6 @@ namespace eosiosystem {
                 u.use_cpu = 0;
                 u.use_net = 0;
                 u.daycount = 0;
-                u.value_transfer_rate = initial_value_transfer_rate;
                 u.ma_cpu = 0;
                 u.ma_net = 0;
                 u.ema_cpu = 0;
