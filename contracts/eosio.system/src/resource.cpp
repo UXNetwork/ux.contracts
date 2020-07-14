@@ -32,6 +32,7 @@ namespace eosiosystem {
     }
 
     // called from settotalusg 
+    // todo - calculate payment for oracles
     void system_contract::set_total(uint64_t total_cpu_us, uint64_t total_net_words, time_point_sec period_start)
     {
         check(total_cpu_us > 0, "cpu measurement must be greater than 0");
@@ -579,6 +580,8 @@ namespace eosiosystem {
                                 t.timestamp = period_start;
                             });
                         }
+
+                        // todo - add votes proportional to usage share
                         update_votes(account, 100); // ignores non-existent accounts
                     }
                     _resource_config_state.account_distributions_made.push_back(dataset_id);
@@ -629,7 +632,10 @@ namespace eosiosystem {
                 }
             }
 
-            // score submissions based on commitment hash and modal agreement
+            // score and reward submissions based on commitment hash and modal agreement
+            auto core_sym = core_symbol();
+            account_pay_table ap_t(get_self(), get_self().value);
+
             for (int i=0; i<oracles.size(); i++) {
                 auto ut_itr = u_t.begin();
                 ut_itr = u_t.find(oracles[i].value);
@@ -648,9 +654,9 @@ namespace eosiosystem {
                     checksum256 commit_hash = ut_itr->all_data_hash;
                     checksum256 reveal_hash = sha256(datatext.c_str(), datatext.size());
                     if (reveal_hash == commit_hash) {
-                        oracle_points = 100; // data is as declared
+                        oracle_points = 1; // data is as declared
                         if ((commit_hash == modal_hash) && (mode_count >= _resource_config_state.oracle_consensus_threshold)) {
-                            oracle_points += 100;
+                            oracle_points += 9; // data is same as modal data
                         }
                     }
 
@@ -660,13 +666,35 @@ namespace eosiosystem {
                     if (st_itr == s_t.end()) {
                         s_t.emplace(get_self(), [&](auto& t) {
                             t.account = oracles[i];
-                            t.score = oracle_points;
+                            t.submissions_score = oracle_points;
+                            t.submissions_count = 1;
                         });
                     } else {
                         s_t.modify(st_itr, get_self(), [&](auto& t) {
-                            t.score += oracle_points;
+                            t.submissions_score += oracle_points;
+                            t.submissions_count += 1;
                         });
                     }
+
+                    // add oracle payment to resaccpay table
+                    // todo - change to proper payment
+//                    auto amount = (static_cast<float>(account_cpu) / total_cpu) * utility_tokens_amount;
+                    auto amount = 0;
+                    asset payout = asset(amount, core_symbol());
+                    auto ap_itr = ap_t.find(oracles[i].value);
+                    if (ap_itr == ap_t.end()) {
+                        ap_t.emplace(get_self(), [&](auto& t) {
+                            t.account = oracles[i];
+                            t.payout = payout;
+                            t.timestamp = _resource_config_state.period_start;
+                        });
+                    } else {
+                        ap_t.modify(ap_itr, get_self(), [&](auto& t) {
+                            t.payout += payout;
+                            t.timestamp = _resource_config_state.period_start;
+                        });
+                    }
+
                 }
             }
 

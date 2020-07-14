@@ -40,7 +40,8 @@ namespace eosiosystem {
    struct [[eosio::table("ressources"), eosio::contract("eosio.system")]] sources
    {
       name account;
-      uint32_t score;
+      uint32_t submissions_score;
+      uint32_t submissions_count;
       uint64_t primary_key() const { return (account.value); }
    };
 
