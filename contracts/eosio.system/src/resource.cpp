@@ -26,7 +26,7 @@ namespace eosiosystem {
         if (p_itr->owner==owner) return true;
         p_itr++;
         count++;
-        if (count>100) break;
+        if (count==21) break;
       }
       return false;
     }
@@ -636,6 +636,8 @@ namespace eosiosystem {
             auto core_sym = core_symbol();
             account_pay_table ap_t(get_self(), get_self().value);
 
+            auto oracle_full_data_mode_count = 0;
+
             for (int i=0; i<oracles.size(); i++) {
                 auto ut_itr = u_t.begin();
                 ut_itr = u_t.find(oracles[i].value);
@@ -657,6 +659,7 @@ namespace eosiosystem {
                         oracle_points = 1; // data is as declared
                         if ((commit_hash == modal_hash) && (mode_count >= _resource_config_state.oracle_consensus_threshold)) {
                             oracle_points += 9; // data is same as modal data
+                            oracle_full_data_mode_count += 1;
                         }
                     }
 
@@ -698,6 +701,8 @@ namespace eosiosystem {
                 }
             }
 
+            // prevent period advancing if no modal data was received
+            check(oracle_full_data_mode_count >= _resource_config_state.oracle_consensus_threshold, "full modal data not received");
 
             // erase records ready for next periods submissions
             auto ut_itr = u_t.begin();
