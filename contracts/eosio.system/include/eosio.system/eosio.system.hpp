@@ -1187,7 +1187,6 @@ namespace eosiosystem {
          ACTION activatefeat(name feature);
 
           // resource helper functions defined in resource.cpp
-         void update_votes( const name& voter_name, uint64_t weight );
          void set_total(uint64_t total_cpu_us, uint64_t total_net_words, time_point_sec period_start);
          void issue_inflation(time_point_sec period_start);
 

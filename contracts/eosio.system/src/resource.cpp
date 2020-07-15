@@ -581,8 +581,6 @@ namespace eosiosystem {
                             });
                         }
 
-                        // todo - add votes proportional to usage share
-                        update_votes(account, 100); // ignores non-existent accounts
                     }
                     _resource_config_state.account_distributions_made.push_back(dataset_id);
                 }
@@ -750,25 +748,5 @@ namespace eosiosystem {
             f.active = true;
         });
     }
-
-   void system_contract::update_votes( const name& voter_name, uint64_t weight ) {
-       auto itr = _voters.find(voter_name.value);
-       if( itr == _voters.end() ) {
-        return;
-       }
-        _voters.modify(itr, same_payer, [&](auto &v) {
-                v.last_vote_weight += weight;
-            });
-
-       for( const auto &p: itr->producers ) {
-           auto pitr = _producers.find(p.value);
-           if(pitr == _producers.end()) {
-               continue;
-           }
-            _producers.modify(pitr, same_payer, [&](auto &p) {
-                p.total_votes += weight;
-            });
-       }
-   }
 
 }
