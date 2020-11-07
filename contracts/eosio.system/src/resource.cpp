@@ -565,7 +565,7 @@ namespace eosiosystem {
                     for (int i=0; i<accounts_usage_data.size(); i++) {
                         auto account = accounts_usage_data[i].a;
                         auto account_cpu = accounts_usage_data[i].u;
-                        auto add_claim = (static_cast<float>(account_cpu) / total_cpu) * utility_tokens_amount;
+                        auto add_claim = (static_cast<double>(account_cpu) / total_cpu) * utility_tokens_amount;
                         asset payout = asset(add_claim, core_symbol());
                         auto ap_itr = ap_t.find(account.value);
                         if (ap_itr == ap_t.end()) {
