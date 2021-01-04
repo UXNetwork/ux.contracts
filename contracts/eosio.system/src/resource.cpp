@@ -46,7 +46,7 @@ namespace eosiosystem {
         float MP = _resource_config_state.max_pay_constant;
 
         uint64_t draglimit = _resource_config_state.emadraglimit;
-        uint64_t day_count = itr->daycount + 1;
+        uint64_t day_count = itr->daycount;
 
         float VT = pow(2, -(static_cast<double>(day_count) / 365)) * _resource_config_state.initial_value_transfer_rate;
 
@@ -73,11 +73,9 @@ namespace eosiosystem {
         float net_percent_total = usage_net / (usage_net + usage_cpu);
         float cpu_percent_total = usage_cpu / (usage_net + usage_cpu);
 
-         print(" :: system_max_net: ");
-         print(std::to_string(system_max_net));
+        print("system_max_net:: ", std::to_string(system_max_net), "\n");
+        print("system_max_cpu:: ", std::to_string(system_max_cpu), "\n");
 
-         print(" :: system_max_cpu: ");
-         print(std::to_string(system_max_cpu));
 
          print(" :: usage_cpu: ");
          print(std::to_string(usage_cpu));
@@ -123,8 +121,7 @@ namespace eosiosystem {
             UTIL_CPU_EMA = UTIL_CPU_MA;
             UTIL_NET_EMA = UTIL_NET_MA;
         }
-//        float UTIL_TOTAL_EMA = (UTIL_CPU_EMA + UTIL_NET_EMA) / 2;
-        float UTIL_TOTAL_EMA = UTIL_CPU_EMA + UTIL_NET_EMA;
+        float UTIL_TOTAL_EMA = (UTIL_CPU_EMA + UTIL_NET_EMA) / 2;
 
         if(UTIL_TOTAL_EMA < 0.01) {
             UTIL_CPU_EMA = UTIL_CPU_EMA / UTIL_TOTAL_EMA * 0.01;
@@ -241,7 +238,7 @@ namespace eosiosystem {
         u_t.emplace(get_self(), [&](auto &h) {
             h.id = pk;
             h.timestamp = period_start;
-            h.daycount = day_count;
+            h.daycount = day_count+1;
             h.total_cpu_us = total_cpu_us;
             h.total_net_words = total_net_words;
             h.net_percent_total = net_percent_total;
@@ -597,7 +594,8 @@ namespace eosiosystem {
     {
         auto current_seconds = current_time_point().sec_since_epoch();
         auto period_start_seconds = _resource_config_state.period_start.sec_since_epoch();
-        if (current_seconds >= (period_start_seconds + (_resource_config_state.period_seconds * 2))) {
+        check(current_seconds >= (period_start_seconds + (_resource_config_state.period_seconds)), "current resource period has not ended");
+        if (current_seconds >= (period_start_seconds + (_resource_config_state.period_seconds))) {
 
             // erase records ready for next periods submissions
             datasets_table d_t(get_self(), get_self().value);
