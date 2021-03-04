@@ -101,23 +101,26 @@ namespace eosiosystem {
         float UTIL_CPU_MA = ux::calcMA(ma_cpu_total, period, usage_cpu);
         float UTIL_NET_MA = ux::calcMA(ma_net_total, period, usage_net);
 
-        float UTIL_CPU_EMA;
-        float UTIL_NET_EMA;
+        float raw_util_cpu_ema;
+        float raw_util_net_ema;
 
         uint64_t pk = u_t.available_primary_key();
 
         // use simple moving average until we reach draglimit samples
         if (pk >= draglimit)
         {
-            UTIL_CPU_EMA = ux::calcEMA(previousAverageCPU, draglimit, usage_cpu);
-            UTIL_NET_EMA = ux::calcEMA(previousAverageNET, draglimit, usage_net);
+            raw_util_cpu_ema = ux::calcEMA(previousAverageCPU, draglimit, usage_cpu);
+            raw_util_net_ema = ux::calcEMA(previousAverageNET, draglimit, usage_net);
         }
         else
         {
-            UTIL_CPU_EMA = UTIL_CPU_MA;
-            UTIL_NET_EMA = UTIL_NET_MA;
+            raw_util_cpu_ema = UTIL_CPU_MA;
+            raw_util_net_ema = UTIL_NET_MA;
         }
-        float UTIL_TOTAL_EMA = (UTIL_CPU_EMA + UTIL_NET_EMA) / 2;
+        float UTIL_CPU_EMA = raw_util_cpu_ema / 2;
+        float UTIL_NET_EMA = raw_util_net_ema / 2;
+
+        float UTIL_TOTAL_EMA = (UTIL_CPU_EMA + UTIL_NET_EMA);
 
         if(UTIL_TOTAL_EMA < 0.01) {
             UTIL_CPU_EMA = UTIL_CPU_EMA / UTIL_TOTAL_EMA * 0.01;
@@ -193,12 +196,12 @@ namespace eosiosystem {
         print("NET_tax_daily:: ", std::to_string(NET_tax_daily), "\n");
 
         float NET_tax_pay = -NET_tax_daily * UTIL_NET_EMA;
-        print("NET_tax_pay:: ", std::to_string(NET_tax_pay), "\n");
+         print("NET_tax_pay:: ", std::to_string(NET_tax_pay), "\n");
 
         float bppay_daily = (Bppay_final / inflation) * Daily_i_U;                            //allocate proportionally to BPs
         print("bppay_daily:: ", std::to_string(bppay_daily), "\n");
 
-        float Final_BP_daily = bppay_daily + NET_tax_pay + NET_pay;
+        double Final_BP_daily = bppay_daily + NET_tax_pay + NET_pay;
         print("Final_BP_daily:: ", std::to_string(Final_BP_daily), "\n");
 
         // calculate inflation amount
@@ -220,8 +223,8 @@ namespace eosiosystem {
             h.use_net = usage_net;
             h.ma_cpu = UTIL_CPU_MA;
             h.ma_net = UTIL_NET_MA;
-            h.ema_cpu = UTIL_CPU_EMA;
-            h.ema_net = UTIL_NET_EMA;
+            h.ema_cpu = raw_util_cpu_ema;
+            h.ema_net = raw_util_net_ema;
             h.ema_util_total = UTIL_TOTAL_EMA;
             h.utility = Upaygross;
             h.utility_daily = utility_daily;

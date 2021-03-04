@@ -77,8 +77,8 @@ try
 
    // Test inflation transferred
 
-   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 2859026717);
-   BOOST_TEST(get_balance(N(eosio.upay)).get_amount() == 5721324123);
+   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 4290175274);
+   BOOST_TEST(get_balance(N(eosio.upay)).get_amount() == 2860662061);
 
    // Test Fail on wrong period start
    long period_start_sec_bad = getSecondsSinceEpochUTC("2020-10-01 01:00:00");
@@ -106,8 +106,8 @@ try
    produce_blocks(2);
 
    // Theshold met ... verify inflation distributed
-   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 2859026717);
-   BOOST_TEST(get_balance(N(eosio.upay)).get_amount() == 5721324123);
+   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 4290175274);
+   BOOST_TEST(get_balance(N(eosio.upay)).get_amount() == 2860662061);
 
    // Test fail on account overage
    BOOST_REQUIRE_EQUAL(wasm_assert_msg("insufficient unallocated cpu"), addactusg(N(defproducera), 3, usage_data_50.usage_datasets[1], period_start));
@@ -512,6 +512,37 @@ try
    }
    asset post_balance = get_token_supply();
    cout << "80% utilization 3 year inflation: " << 100 * float((post_balance.get_amount() - pre_balance.get_amount())) / pre_balance.get_amount() << endl;
+}
+FC_LOG_AND_RETHROW()
+
+BOOST_FIXTURE_TEST_CASE(test_random, ux_system_tester)
+try
+{
+   uint32_t day = 0;
+   using namespace std;
+   transfer(config::system_account_name, N(alice1111111), ram_core_sym::from_string("30.0000"), config::system_account_name);
+   produce_blocks(2);
+   // jump to UX start date
+   skipAhead(getSecondsSinceEpochUTC("2020-10-01 00:00:00"));
+
+   // activate chain and vote for producers
+   active_and_vote_producers();
+   activatefeat(N(resource));
+   produce_blocks(2);
+
+   long period_start_sec = getSecondsSinceEpochUTC("2020-10-01 00:00:00");
+   time_point_sec period_start = time_point_sec(period_start_sec);
+
+   uint16_t dataset_batch_size = 5;
+   uint16_t oracle_consensus_threshold = 1;
+   uint32_t period_seconds = 60 * 60 * 24;
+   float initial_value_transfer_rate = 0.1;
+   float max_pay_constant = 0.2947;
+
+   // allow transactions to run
+   initresource(dataset_batch_size, oracle_consensus_threshold, period_start, period_seconds, initial_value_transfer_rate, max_pay_constant);
+   produce_blocks(2);
+   dayCycle("./tests/usage_data/usage_data_rand.json", period_start_sec, 5);
 }
 FC_LOG_AND_RETHROW()
 
