@@ -184,24 +184,10 @@ namespace eosiosystem {
         float NET_pay = utility_daily - CPU_Pay;
         print("NET_pay:: ", std::to_string(NET_pay), "\n");
 
-        // net tax
-        float store_cost = 0.7943282347242815; //pow(0.1, 0.1)
-        float NET_Adj = pow(store_cost, static_cast<double>(day_count) / 365);
-        print("NET_Adj:: ", std::to_string(NET_Adj), "\n");
-
-        float NET_tax = (1 / (1 + inflation) - 1) * NET_Adj;
-        print("NET_tax:: ", std::to_string(NET_tax), "\n");
-
-        float NET_tax_daily = pow(1 + NET_tax, static_cast<double>(1) / 365) - 1;
-        print("NET_tax_daily:: ", std::to_string(NET_tax_daily), "\n");
-
-        float NET_tax_pay = -NET_tax_daily * UTIL_NET_EMA;
-         print("NET_tax_pay:: ", std::to_string(NET_tax_pay), "\n");
-
         float bppay_daily = (Bppay_final / inflation) * Daily_i_U;                            //allocate proportionally to BPs
         print("bppay_daily:: ", std::to_string(bppay_daily), "\n");
 
-        double Final_BP_daily = bppay_daily + NET_tax_pay + NET_pay;
+        double Final_BP_daily = bppay_daily + NET_pay;
         print("Final_BP_daily:: ", std::to_string(Final_BP_daily), "\n");
 
         // calculate inflation amount
@@ -693,7 +679,7 @@ namespace eosiosystem {
     ACTION system_contract::claimdistrib(name account)
     {
         require_auth(account);
-//        check(!_resource_config_state.locked, "cannot claim while inflation calculation is running");
+    // check(!_resource_config_state.locked, "cannot claim while inflation calculation is running");
 
         account_pay_table a_t(get_self(), get_self().value);
         auto itr = a_t.find(account.value);

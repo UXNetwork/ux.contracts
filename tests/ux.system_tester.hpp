@@ -85,6 +85,16 @@ namespace eosio_system
          create_account_with_resources(N(alice1111111), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
          create_account_with_resources(N(bob111111111), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
          create_account_with_resources(N(carol1111111), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
+         create_account_with_resources(N(bp1), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
+         create_account_with_resources(N(bp2), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
+         create_account_with_resources(N(bp3), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
+         create_account_with_resources(N(bp4), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
+         create_account_with_resources(N(bp5), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
+         create_account_with_resources(N(bpa), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
+         create_account_with_resources(N(bpb), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
+         create_account_with_resources(N(bpc), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
+         create_account_with_resources(N(bpd), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
+         create_account_with_resources(N(bpe), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
 
          BOOST_REQUIRE_EQUAL(ux_core_sym::from_string("1000000000.0000"), get_balance("eosio") + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram"));
       }
@@ -169,7 +179,7 @@ namespace eosio_system
       }
 
       transaction_trace_ptr create_account_with_resources(account_name a, account_name creator, asset ramfunds, bool multisig,
-                                                          asset net = ux_core_sym::from_string("10.0000"), asset cpu = ux_core_sym::from_string("10.0000"))
+                                                          asset net = ux_core_sym::from_string("10.0000"), asset cpu = ux_core_sym::from_string("100.0000"))
       {
          signed_transaction trx;
          set_transaction_headers(trx);
@@ -1110,6 +1120,12 @@ namespace eosio_system
       {
          //fc::variant dataset = json_from_file_or_string(data);
          return push_action(source, N(nextperiod), mvo());
+      }
+
+      action_result claimdistrib(name account)
+      {
+         //fc::variant dataset = json_from_file_or_string(data);
+         return push_action(account, N(claimdistrib), mvo()("account", account));
       }
 
       long getSecondsSinceEpochUTC(const string &timestamp)

@@ -77,7 +77,7 @@ try
 
    // Test inflation transferred
 
-   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 4290175274);
+   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 2860662061);
    BOOST_TEST(get_balance(N(eosio.upay)).get_amount() == 2860662061);
 
    // Test Fail on wrong period start
@@ -106,8 +106,9 @@ try
    produce_blocks(2);
 
    // Theshold met ... verify inflation distributed
-   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 4290175274);
+   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 2860662061);
    BOOST_TEST(get_balance(N(eosio.upay)).get_amount() == 2860662061);
+   
 
    // Test fail on account overage
    BOOST_REQUIRE_EQUAL(wasm_assert_msg("insufficient unallocated cpu"), addactusg(N(defproducera), 3, usage_data_50.usage_datasets[1], period_start));
@@ -210,6 +211,7 @@ BOOST_FIXTURE_TEST_CASE(resource_nextperiod, ux_system_tester)
 try
 {
    using namespace std;
+   auto start_supply = get_token_supply().get_amount();
    transfer(config::system_account_name, N(alice1111111), ram_core_sym::from_string("30.0000"), config::system_account_name);
    produce_blocks(2);
    // jump to UX start date
@@ -233,7 +235,7 @@ try
    initresource(dataset_batch_size, oracle_consensus_threshold, period_start, period_seconds, initial_value_transfer_rate, max_pay_constant);
    produce_blocks(2);
 
-   fc::variant usage_data_vo = json_from_file_or_string("./tests/usage_data/usage_data_50.json");
+   fc::variant usage_data_vo = json_from_file_or_string("./tests/usage_data/usage_data_80.json");
    struct oracle_data usage_data = generate_all_data_hash(usage_data_vo, dataset_batch_size);
 
    // Set totals for oracle 1
@@ -260,6 +262,16 @@ try
       BOOST_REQUIRE_EQUAL(success(), addactusg(N(defproducerb), i + 1, usage_data.usage_datasets[i], period_start));
    }
    BOOST_REQUIRE_EQUAL(success(), nextperiod(N(defproducerb)));
+   auto supply = get_token_supply().get_amount();
+   auto inflation = supply - start_supply;
+   float temp = float(inflation / float(supply));
+   /**
+   cout << "start token supply: " << start_supply << endl;
+   cout << "inflation: " << inflation << endl;
+   cout << "token supply: " << supply << endl;
+   cout << "temp: " << temp << endl;
+   cout << "Annual inflation: " << 365 * 100 * temp << endl;
+   **/
 }
 FC_LOG_AND_RETHROW()
 
@@ -514,8 +526,8 @@ try
    cout << "80% utilization 3 year inflation: " << 100 * float((post_balance.get_amount() - pre_balance.get_amount())) / pre_balance.get_amount() << endl;
 }
 FC_LOG_AND_RETHROW()
-
-BOOST_FIXTURE_TEST_CASE(test_random, ux_system_tester)
+/**
+BOOST_FIXTURE_TEST_CASE(test_80_cpu_40_net, ux_system_tester)
 try
 {
    uint32_t day = 0;
@@ -542,8 +554,14 @@ try
    // allow transactions to run
    initresource(dataset_batch_size, oracle_consensus_threshold, period_start, period_seconds, initial_value_transfer_rate, max_pay_constant);
    produce_blocks(2);
-   dayCycle("./tests/usage_data/usage_data_rand.json", period_start_sec, 5);
+   dayCycle("./tests/usage_data/usage_data_cpu_80_net_40.json", period_start_sec, 5);
+ 
+   
+   //std::cout << get_balance(N(eosio.bpay)).get_amount()  << std::endl;
+   //std::cout << get_balance(N(eosio.upay)).get_amount()  << std::endl;   
+
 }
 FC_LOG_AND_RETHROW()
+**/
 
 BOOST_AUTO_TEST_SUITE_END()
