@@ -48,6 +48,9 @@ namespace eosiosystem {
         uint64_t draglimit = _resource_config_state.emadraglimit;
         uint64_t day_count = itr->daycount;
 
+        // restrict inflation to the first 3 years after resource model deployment (2 normal years + 1 leap year)
+        check( day_count < 1096, "inflation period has ended");
+
         float VT = pow(2, -(static_cast<double>(day_count) / 365)) * _resource_config_state.initial_value_transfer_rate;
 
         float previousAverageCPU = itr->ma_cpu;
