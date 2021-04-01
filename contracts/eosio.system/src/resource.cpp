@@ -35,9 +35,6 @@ namespace eosiosystem {
     // todo - calculate payment for oracles
     void system_contract::set_total(uint64_t total_cpu_us, uint64_t total_net_words, time_point_sec period_start)
     {
-        check(total_cpu_us > 0, "cpu measurement must be greater than 0");
-        check(total_net_words > 0, "net measurement must be greater than 0");
-
         system_usage_history_table u_t(get_self(), get_self().value);
         auto itr = u_t.end();
         itr--;
@@ -322,9 +319,6 @@ namespace eosiosystem {
     {
         require_auth(source);
         check(is_oracle(source) == true, "not a qualified oracle");
-
-        check(total_cpu_us > 0, "cpu measurement must be greater than 0");
-        check(total_net_words > 0, "net measurement must be greater than 0");
 
         // todo - check timestamp and advance _resource_config_state if necessary
         check(_resource_config_state.period_start == period_start, "period_start does not match current period_start");
