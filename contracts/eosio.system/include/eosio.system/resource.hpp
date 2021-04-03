@@ -34,6 +34,7 @@ namespace eosiosystem {
       uint32_t emadraglimit = 2;
       float initial_value_transfer_rate = 0.1;
       float max_pay_constant = 0.2947;
+      time_point_sec last_period_inflation_print;
    };
 
    // holds the points score of oracles (based on commit-reveal and modal hash matches)
@@ -86,8 +87,8 @@ namespace eosiosystem {
 
    struct [[eosio::table("resaccpay"), eosio::contract("eosio.system")]] account_pay
    {
-      name account; //Worbli account consuming the resource
-      asset payout; //WBI asset to pay for this period
+      name account; // account consuming the resource
+      asset balance; // asset balance
       time_point_sec timestamp;
       uint64_t primary_key() const { return (account.value); }
    };

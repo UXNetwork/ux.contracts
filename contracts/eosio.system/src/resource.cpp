@@ -257,7 +257,7 @@ namespace eosiosystem {
         // check(active_producers.size() == _gstate.last_producer_schedule_size, "active_producers must equal last_producer_schedule_size");
          auto active_producer_count = active_producers.size();
          check(active_producer_count > 0, "No active producers");
-         uint64_t earned_pay = uint64_t(itr_u->bppay_tokens.amount / active_producer_count);
+         asset earned_pay = asset(itr_u->bppay_tokens.amount / active_producer_count, core_symbol());
          for (const auto &p : active_producers)
          {
 
@@ -267,19 +267,19 @@ namespace eosiosystem {
             {
                pay_itr = _producer_pay.emplace(p, [&](auto &pay) {
                   pay.owner = p;
-                  pay.earned_pay = earned_pay;
+                  pay.balance = earned_pay;
                });
             }
             else
             {
                _producer_pay.modify(pay_itr, same_payer, [&](auto &pay) {
-                  pay.earned_pay += earned_pay;
+                  pay.balance += earned_pay;
                });
             }
          }
         }
 
-        _uxgstate.last_inflation_print = period_start;
+        _resource_config_state.last_period_inflation_print = period_start;
     }
 
 
@@ -293,6 +293,7 @@ namespace eosiosystem {
         _resource_config_state.period_seconds = period_seconds;
         _resource_config_state.initial_value_transfer_rate = initial_value_transfer_rate;
         _resource_config_state.max_pay_constant = max_pay_constant;
+        _resource_config_state.last_period_inflation_print = time_point_sec();
 
         system_usage_history_table u_t(get_self(), get_self().value);
         if (u_t.begin() == u_t.end()) {
@@ -527,12 +528,12 @@ namespace eosiosystem {
                         if (ap_itr == ap_t.end()) {
                             ap_t.emplace(get_self(), [&](auto& t) {
                                 t.account = account;
-                                t.payout = payout;
+                                t.balance = payout;
                                 t.timestamp = period_start;
                             });
                         } else {
                             ap_t.modify(ap_itr, get_self(), [&](auto& t) {
-                                t.payout += payout;
+                                t.balance += payout;
                                 t.timestamp = period_start;
                             });
                         }
@@ -643,12 +644,12 @@ namespace eosiosystem {
                     if (ap_itr == ap_t.end()) {
                         ap_t.emplace(get_self(), [&](auto& t) {
                             t.account = oracles[i];
-                            t.payout = payout;
+                            t.balance = payout;
                             t.timestamp = _resource_config_state.period_start;
                         });
                     } else {
                         ap_t.modify(ap_itr, get_self(), [&](auto& t) {
-                            t.payout += payout;
+                            t.balance += payout;
                             t.timestamp = _resource_config_state.period_start;
                         });
                     }
@@ -681,14 +682,14 @@ namespace eosiosystem {
         account_pay_table a_t(get_self(), get_self().value);
         auto itr = a_t.find(account.value);
         check(itr != a_t.end(), "account not found");
-        check(itr->payout != asset( 0, core_symbol() ), "zero balance to claim");
+        check(itr->balance != asset( 0, core_symbol() ), "zero balance to claim");
 
         auto feature_itr = _features.find("resource"_n.value);
         bool resource_active = feature_itr == _features.end() ? false : feature_itr->active;
         if(resource_active)
         {
             token::transfer_action transfer_act{token_account, {{upay_account, active_permission}, {account, active_permission}}};
-            transfer_act.send(upay_account, account, itr->payout, "utility reward");
+            transfer_act.send(upay_account, account, itr->balance, "utility reward");
         }
         itr = a_t.erase(itr);
     }

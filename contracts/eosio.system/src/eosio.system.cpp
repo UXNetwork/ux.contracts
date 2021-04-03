@@ -33,7 +33,6 @@ namespace eosiosystem {
     _rexorders(get_self(), get_self().value),
 
     _producer_pay(get_self(), get_self().value),
-    _uxglobal(get_self(), get_self().value),
     _resource_config(get_self(), get_self().value),
     _features(get_self(), get_self().value)
 
@@ -43,7 +42,6 @@ namespace eosiosystem {
       _gstate3 = _global3.exists() ? _global3.get() : eosio_global_state3{};
       _gstate4 = _global4.exists() ? _global4.get() : get_default_inflation_parameters();
 
-      _uxgstate = _uxglobal.exists() ? _uxglobal.get() : ux_global_state{};
       _resource_config_state = _resource_config.exists() ? _resource_config.get() : resource_config_state{};
    }
 

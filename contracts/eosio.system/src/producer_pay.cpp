@@ -70,130 +70,23 @@ namespace eosiosystem {
       }
    }
 
-   void system_contract::claimrewards( const name& owner ) {
+   ACTION system_contract::claimrewards( const name& owner ) {
+      require_auth(owner);
 
-      check(false, "claimRewards is temporarily disabled");
-      
-   /*   require_auth( owner );
+      auto pay_itr = _producer_pay.find(owner.value);
+      check(pay_itr != _producer_pay.end(), "owner balance not found");
 
-      const auto& prod = _producers.get( owner.value );
-      check( prod.active(), "producer does not have an active key" );
+      auto balance = pay_itr->balance;
 
-      check( _gstate.thresh_activated_stake_time != time_point(),
-                    "cannot claim rewards until the chain is activated (at least 15% of all tokens participate in voting)" );
+      check(balance.amount > 0, "no balance to claim");
 
-      const auto ct = current_time_point();
+      token::transfer_action transfer_act{ token_account, { {bpay_account, active_permission}, {owner, active_permission} } };
+      transfer_act.send( bpay_account, owner, balance, "producer reward" );
 
-      check( ct - prod.last_claim_time > microseconds(useconds_per_day), "already claimed rewards within past day" );
-
-      const asset token_supply   = token::get_supply(token_account, core_symbol().code() );
-      const auto usecs_since_last_fill = (ct - _gstate.last_pervote_bucket_fill).count();
-
-      if( usecs_since_last_fill > 0 && _gstate.last_pervote_bucket_fill > time_point() ) {
-         double additional_inflation = (_gstate4.continuous_rate * double(token_supply.amount) * double(usecs_since_last_fill)) / double(useconds_per_year);
-         check( additional_inflation <= double(std::numeric_limits<int64_t>::max() - ((1ll << 10) - 1)),
-                "overflow in calculating new tokens to be issued; inflation rate is too high" );
-         int64_t new_tokens = (additional_inflation < 0.0) ? 0 : static_cast<int64_t>(additional_inflation);
-
-         int64_t to_producers     = (new_tokens * uint128_t(pay_factor_precision)) / _gstate4.inflation_pay_factor;
-         int64_t to_savings       = new_tokens - to_producers;
-         int64_t to_per_block_pay = (to_producers * uint128_t(pay_factor_precision)) / _gstate4.votepay_factor;
-         int64_t to_per_vote_pay  = to_producers - to_per_block_pay;
-
-         if( new_tokens > 0 ) {
-            {
-               token::issue_action issue_act{ token_account, { {get_self(), active_permission} } };
-               issue_act.send( get_self(), asset(new_tokens, core_symbol()), "issue tokens for producer pay and savings" );
-            }
-            {
-               token::transfer_action transfer_act{ token_account, { {get_self(), active_permission} } };
-               if( to_savings > 0 ) {
-                  transfer_act.send( get_self(), saving_account, asset(to_savings, core_symbol()), "unallocated inflation" );
-               }
-               if( to_per_block_pay > 0 ) {
-                  transfer_act.send( get_self(), bpay_account, asset(to_per_block_pay, core_symbol()), "fund per-block bucket" );
-               }
-               if( to_per_vote_pay > 0 ) {
-                  transfer_act.send( get_self(), vpay_account, asset(to_per_vote_pay, core_symbol()), "fund per-vote bucket" );
-               }
-            }
-         }
-
-         _gstate.pervote_bucket          += to_per_vote_pay;
-         _gstate.perblock_bucket         += to_per_block_pay;
-         _gstate.last_pervote_bucket_fill = ct;
-      }
-
-      auto prod2 = _producers2.find( owner.value );
-
-      /// New metric to be used in pervote pay calculation. Instead of vote weight ratio, we combine vote weight and
-      /// time duration the vote weight has been held into one metric.
-      const auto last_claim_plus_3days = prod.last_claim_time + microseconds(3 * useconds_per_day);
-
-      bool crossed_threshold       = (last_claim_plus_3days <= ct);
-      bool updated_after_threshold = true;
-      if ( prod2 != _producers2.end() ) {
-         updated_after_threshold = (last_claim_plus_3days <= prod2->last_votepay_share_update);
-      } else {
-         prod2 = _producers2.emplace( owner, [&]( producer_info2& info  ) {
-            info.owner                     = owner;
-            info.last_votepay_share_update = ct;
-         });
-      }
-
-      // Note: updated_after_threshold implies cross_threshold (except if claiming rewards when the producers2 table row did not exist).
-      // The exception leads to updated_after_threshold to be treated as true regardless of whether the threshold was crossed.
-      // This is okay because in this case the producer will not get paid anything either way.
-      // In fact it is desired behavior because the producers votes need to be counted in the global total_producer_votepay_share for the first time.
-
-      int64_t producer_per_block_pay = 0;
-      if( _gstate.total_unpaid_blocks > 0 ) {
-         producer_per_block_pay = (_gstate.perblock_bucket * prod.unpaid_blocks) / _gstate.total_unpaid_blocks;
-      }
-
-      double new_votepay_share = update_producer_votepay_share( prod2,
-                                    ct,
-                                    updated_after_threshold ? 0.0 : prod.total_votes,
-                                    true // reset votepay_share to zero after updating
-                                 );
-
-      int64_t producer_per_vote_pay = 0;
-      if( _gstate2.revision > 0 ) {
-         double total_votepay_share = update_total_votepay_share( ct );
-         if( total_votepay_share > 0 && !crossed_threshold ) {
-            producer_per_vote_pay = int64_t((new_votepay_share * _gstate.pervote_bucket) / total_votepay_share);
-            if( producer_per_vote_pay > _gstate.pervote_bucket )
-               producer_per_vote_pay = _gstate.pervote_bucket;
-         }
-      } else {
-         if( _gstate.total_producer_vote_weight > 0 ) {
-            producer_per_vote_pay = int64_t((_gstate.pervote_bucket * prod.total_votes) / _gstate.total_producer_vote_weight);
-         }
-      }
-
-      if( producer_per_vote_pay < min_pervote_daily_pay ) {
-         producer_per_vote_pay = 0;
-      }
-
-      _gstate.pervote_bucket      -= producer_per_vote_pay;
-      _gstate.perblock_bucket     -= producer_per_block_pay;
-      _gstate.total_unpaid_blocks -= prod.unpaid_blocks;
-
-      update_total_votepay_share( ct, -new_votepay_share, (updated_after_threshold ? prod.total_votes : 0.0) );
-
-      _producers.modify( prod, same_payer, [&](auto& p) {
-         p.last_claim_time = ct;
-         p.unpaid_blocks   = 0;
+      _producer_pay.modify(pay_itr, same_payer, [&](auto &pay) {
+         pay.balance -= balance;
+         pay.last_claim_time = current_time_point();
       });
-
-      if ( producer_per_block_pay > 0 ) {
-         token::transfer_action transfer_act{ token_account, { {bpay_account, active_permission}, {owner, active_permission} } };
-         transfer_act.send( bpay_account, owner, asset(producer_per_block_pay, core_symbol()), "producer block pay" );
-      }
-      if ( producer_per_vote_pay > 0 ) {
-         token::transfer_action transfer_act{ token_account, { {vpay_account, active_permission}, {owner, active_permission} } };
-         transfer_act.send( vpay_account, owner, asset(producer_per_vote_pay, core_symbol()), "producer vote pay" );
-      }*/
    }
 
 } //namespace eosiosystem

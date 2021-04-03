@@ -11,7 +11,7 @@
 #include <eosio.system/exchange_state.hpp>
 #include <eosio.system/native.hpp>
 
-#include <eosio.system/ux.hpp>
+#include <eosio.system/producer_pay.hpp>
 #include <eosio.system/resource.hpp>
 
 #include <deque>
@@ -552,8 +552,6 @@ namespace eosiosystem {
          rex_order_table          _rexorders;
 
          producer_pay_table       _producer_pay;
-         uxglobal_state_singleton _uxglobal;
-         ux_global_state          _uxgstate;
          resource_config_singleton _resource_config;
          resource_config_state    _resource_config_state;
          feature_toggle_table     _features;
