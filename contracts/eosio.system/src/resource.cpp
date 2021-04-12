@@ -362,7 +362,7 @@ namespace eosiosystem {
         }
 
         // add totals data
-        u_t.emplace(get_self(), [&](auto& t) {
+        u_t.emplace(source, [&](auto& t) {
             t.source = source;
             t.total_cpu_us = total_cpu_us;
             t.total_net_words = total_net_words;
@@ -450,7 +450,7 @@ namespace eosiosystem {
             // add cpu to allocated amount for oracle to ensure not exceeding declared total
             auto unallocated_cpu = ut_itr->total_cpu_us - ut_itr->allocated_cpu;
             check(unallocated_cpu >= cpu_usage_us, "insufficient unallocated cpu");
-            u_t.modify(ut_itr, get_self(), [&](auto& t) {
+            u_t.modify(ut_itr, source, [&](auto& t) {
                 t.allocated_cpu += cpu_usage_us;
             });
 
@@ -461,7 +461,7 @@ namespace eosiosystem {
 
         // hash submitted dataset
         checksum256 hash = sha256(datatext.c_str(), datatext.size());
-        u_t.modify(ut_itr, get_self(), [&](auto& t) {
+        u_t.modify(ut_itr, source, [&](auto& t) {
             t.submission_hash_list.push_back(hash);
         });
 
@@ -470,7 +470,7 @@ namespace eosiosystem {
         auto dt_hash_index = d_t.get_index<"hash"_n>();
         auto dt_itr = dt_hash_index.find(hash);
         if (dt_itr->hash != hash) {
-            d_t.emplace(get_self(), [&](auto& t) { // todo - change payer to oracle account?
+            d_t.emplace(source, [&](auto& t) {
                 t.id = d_t.available_primary_key();
                 t.hash = hash;
                 t.data = dataset;
