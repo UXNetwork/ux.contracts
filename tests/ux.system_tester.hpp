@@ -214,7 +214,7 @@ namespace eosio_system
       }
 
       transaction_trace_ptr setup_producer_accounts(const std::vector<account_name> &accounts,
-                                                    asset ram = ram_core_sym::from_string("5.0000"),
+                                                    asset ram = ram_core_sym::from_string("100.0000"),
                                                     asset cpu = ux_core_sym::from_string("11000000.0000"),
                                                     asset net = ux_core_sym::from_string("80.0000"))
       {
