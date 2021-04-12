@@ -1183,6 +1183,7 @@ namespace eosiosystem {
          ACTION nextperiod();
          ACTION claimdistrib(name account);
          ACTION activatefeat(name feature);
+         ACTION clrresource();
 
           // resource helper functions defined in resource.cpp
          void set_total(uint64_t total_cpu_us, uint64_t total_net_words, time_point_sec period_start);

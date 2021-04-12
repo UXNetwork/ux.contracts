@@ -311,6 +311,12 @@ namespace eosiosystem {
                 u.utility_daily = 0;
                 u.bppay_daily = 0;
             });
+
+            // only remove submission state if no history
+            _resource_config_state.submitting_oracles = {};
+            _resource_config_state.inflation_transferred = false;
+            _resource_config_state.account_distributions_made = {};
+
         }
     }
 
@@ -464,7 +470,7 @@ namespace eosiosystem {
         auto dt_hash_index = d_t.get_index<"hash"_n>();
         auto dt_itr = dt_hash_index.find(hash);
         if (dt_itr->hash != hash) {
-            d_t.emplace(get_self(), [&](auto& t) {
+            d_t.emplace(get_self(), [&](auto& t) { // todo - change payer to oracle account?
                 t.id = d_t.available_primary_key();
                 t.hash = hash;
                 t.data = dataset;
@@ -705,6 +711,52 @@ namespace eosiosystem {
             f.feature = feature;
             f.active = true;
         });
+    }
+
+    ACTION system_contract::clrresource() {
+        require_auth(get_self());
+
+        system_usage_history_table uh_t(get_self(), get_self().value);
+        auto uh_itr = uh_t.begin();
+        while (uh_itr != uh_t.end()) {
+            uh_itr = uh_t.erase(uh_itr);
+        }
+
+        datasets_table d_t(get_self(), get_self().value);
+        auto dt_itr = d_t.begin();
+        while (dt_itr != d_t.end()) {
+            dt_itr = d_t.erase(dt_itr);
+        }
+
+        account_pay_table a_t(get_self(), get_self().value);
+        auto a_itr = a_t.begin();
+        while (a_itr != a_t.end()) {
+            a_itr = a_t.erase(a_itr);
+        }
+
+        system_usage_table u_t(get_self(), get_self().value);
+        auto u_itr = u_t.begin();
+        while (u_itr != u_t.end()) {
+            u_itr = u_t.erase(u_itr);
+        }
+
+        sources_table s_t(get_self(), get_self().value);
+        auto s_itr = s_t.begin();
+        while (s_itr != s_t.end()) {
+            s_itr = s_t.erase(s_itr);
+        }
+
+        feature_toggle_table f_t(get_self(), get_self().value);
+        auto f_itr = f_t.begin();
+        while (f_itr != f_t.end()) {
+            f_itr = f_t.erase(f_itr);
+        }
+
+        // reset singleton state (can't remove)
+        _resource_config_state.submitting_oracles = {};
+        _resource_config_state.inflation_transferred = false;
+        _resource_config_state.account_distributions_made = {};
+
     }
 
 }
