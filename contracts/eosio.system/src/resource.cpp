@@ -235,8 +235,14 @@ namespace eosiosystem {
         bool resource_active = feature_itr == _features.end() ? false : feature_itr->active;
         if(resource_active) {
          {
+            asset inflation = itr_u->bppay_tokens + itr_u->utility_tokens;
+
+            // defensive measure to cap daily inflation at 1% of max supply
+            asset cap = asset(10000, core_symbol()) * 25000000;
+            check(inflation <= cap, "period inflation cap exceeded");
+
             token::issue_action issue_act{token_account, {{get_self(), active_permission}}};
-            issue_act.send(get_self(), itr_u->bppay_tokens + itr_u->utility_tokens, "issue daily inflation");
+            issue_act.send(get_self(), inflation, "issue daily inflation");
          }
          {
             token::transfer_action transfer_act{token_account, {{get_self(), active_permission}}};
