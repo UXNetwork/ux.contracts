@@ -237,8 +237,9 @@ namespace eosiosystem {
          {
             asset inflation = itr_u->bppay_tokens + itr_u->utility_tokens;
 
-            // defensive measure to cap daily inflation at 1% of max supply
-            asset cap = asset(10000, core_symbol()) * 25000000;
+            // defensive measure to cap daily inflation at 1.5m UTX
+            asset cap = asset(10000, core_symbol()) * 1500000;
+
             check(inflation <= cap, "period inflation cap exceeded");
 
             token::issue_action issue_act{token_account, {{get_self(), active_permission}}};
