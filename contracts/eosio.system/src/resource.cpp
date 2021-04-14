@@ -32,7 +32,7 @@ namespace eosiosystem {
     }
 
     // called from settotalusg 
-    // todo - calculate payment for oracles
+    // todo - calculate payment for oracles in future version
     void system_contract::set_total(uint64_t total_cpu_us, uint64_t total_net_words, time_point_sec period_start)
     {
         system_usage_history_table u_t(get_self(), get_self().value);
@@ -260,10 +260,11 @@ namespace eosiosystem {
             }
          }
 
-        // todo - evaluate this
-        // check(active_producers.size() == _gstate.last_producer_schedule_size, "active_producers must equal last_producer_schedule_size");
+        // check there are enough active producers
          auto active_producer_count = active_producers.size();
          check(active_producer_count > 0, "No active producers");
+         check(active_producer_count == _gstate.last_producer_schedule_size, "active_producers must equal last_producer_schedule_size");
+
          asset earned_pay = asset(itr_u->bppay_tokens.amount / active_producer_count, core_symbol());
          for (const auto &p : active_producers)
          {
@@ -334,7 +335,6 @@ namespace eosiosystem {
         require_auth(source);
         check(is_oracle(source) == true, "not a qualified oracle");
 
-        // todo - check timestamp and advance _resource_config_state if necessary
         check(_resource_config_state.period_start == period_start, "period_start does not match current period_start");
 
         // check submissions are within system limits
@@ -649,7 +649,7 @@ namespace eosiosystem {
                     }
 
                     // add oracle payment to resaccpay table
-                    // todo - change to proper payment
+                    // todo - change to proper payment in future version
 //                    auto amount = (static_cast<float>(account_cpu) / total_cpu) * utility_tokens_amount;
                     auto amount = 0;
                     asset payout = asset(amount, core_symbol());
