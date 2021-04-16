@@ -59,17 +59,19 @@ namespace eosiosystem {
         float usage_cpu = static_cast<float>(total_cpu_us) / system_max_cpu;
         print("usage_cpu:: ", std::to_string(usage_cpu), "\n");
 
-        if(usage_cpu < 0.01) {
-            usage_cpu = 0.01;
+        if(usage_cpu < 0.000001) {
+            usage_cpu = 0.000001;
         }
+        print("adjusted usage_cpu:: ", std::to_string(usage_cpu), "\n");
 
         uint64_t system_max_net = static_cast<uint64_t>(_gstate.max_block_net_usage) * 2 * 60 * 60 * 24;
         check( total_net_words * 8 <= system_max_net, "measured net usage is greater than system total");
         float usage_net = static_cast<float>(total_net_words * 8) / system_max_net;
 
-        if(usage_net < 0.01) {
-            usage_net = 0.01;
+        if(usage_net < 0.000001) {
+            usage_net = 0.000001;
         }
+        print("adjusted usage_net:: ", std::to_string(usage_cpu), "\n");
 
         float net_percent_total = usage_net / (usage_net + usage_cpu);
         float cpu_percent_total = usage_cpu / (usage_net + usage_cpu);
@@ -122,16 +124,16 @@ namespace eosiosystem {
 
         float UTIL_TOTAL_EMA = (UTIL_CPU_EMA + UTIL_NET_EMA);
 
-        if(UTIL_TOTAL_EMA < 0.01) {
-            UTIL_CPU_EMA = UTIL_CPU_EMA / UTIL_TOTAL_EMA * 0.01;
-            UTIL_NET_EMA = UTIL_NET_EMA / UTIL_TOTAL_EMA * 0.01;
-            UTIL_TOTAL_EMA = 0.01;
+        if(UTIL_TOTAL_EMA < 0.000001) {
+            UTIL_CPU_EMA = UTIL_CPU_EMA / UTIL_TOTAL_EMA * 0.000001;
+            UTIL_NET_EMA = UTIL_NET_EMA / UTIL_TOTAL_EMA * 0.000001;
+            UTIL_TOTAL_EMA = 0.000001;
         }
 
-        if(UTIL_TOTAL_EMA > 0.99) {
-            UTIL_CPU_EMA = UTIL_CPU_EMA / UTIL_TOTAL_EMA * 0.99;
-            UTIL_NET_EMA = UTIL_NET_EMA / UTIL_TOTAL_EMA * 0.99;
-            UTIL_TOTAL_EMA = 0.99;
+        if(UTIL_TOTAL_EMA > 0.999999) {
+            UTIL_CPU_EMA = UTIL_CPU_EMA / UTIL_TOTAL_EMA * 0.999999;
+            UTIL_NET_EMA = UTIL_NET_EMA / UTIL_TOTAL_EMA * 0.999999;
+            UTIL_TOTAL_EMA = 0.999999;
         }
 
         float inflation = (1 - UTIL_TOTAL_EMA) / (1 - UTIL_TOTAL_EMA - ux::get_c(UTIL_TOTAL_EMA) * VT) - 1;
@@ -184,7 +186,7 @@ namespace eosiosystem {
         float NET_pay = utility_daily - CPU_Pay;
         print("NET_pay:: ", std::to_string(NET_pay), "\n");
 
-        float bppay_daily = (Bppay_final / inflation) * Daily_i_U;                            //allocate proportionally to BPs
+        double bppay_daily = (Bppay_final / inflation) * Daily_i_U;                            //allocate proportionally to BPs
         print("bppay_daily:: ", std::to_string(bppay_daily), "\n");
 
         double Final_BP_daily = bppay_daily + NET_pay;
@@ -242,13 +244,19 @@ namespace eosiosystem {
 
             check(inflation <= cap, "period inflation cap exceeded");
 
-            token::issue_action issue_act{token_account, {{get_self(), active_permission}}};
-            issue_act.send(get_self(), inflation, "issue daily inflation");
+            if (inflation.amount > 0) {
+                token::issue_action issue_act{token_account, {{get_self(), active_permission}}};
+                issue_act.send(get_self(), inflation, "issue daily inflation");
+            }
          }
          {
             token::transfer_action transfer_act{token_account, {{get_self(), active_permission}}};
-            transfer_act.send(get_self(), bpay_account, itr_u->bppay_tokens, "producer daily");
-            transfer_act.send(get_self(), upay_account, itr_u->utility_tokens, "usage daily");
+            if (itr_u->bppay_tokens.amount > 0) {
+                transfer_act.send(get_self(), bpay_account, itr_u->bppay_tokens, "producer daily");
+            }
+            if (itr_u->utility_tokens.amount > 0) {
+                transfer_act.send(get_self(), upay_account, itr_u->utility_tokens, "usage daily");
+            }
          }
 
          std::vector<name> active_producers;
@@ -266,24 +274,26 @@ namespace eosiosystem {
          check(active_producer_count == _gstate.last_producer_schedule_size, "active_producers must equal last_producer_schedule_size");
 
          asset earned_pay = asset(itr_u->bppay_tokens.amount / active_producer_count, core_symbol());
-         for (const auto &p : active_producers)
-         {
+         if (earned_pay.amount > 0) {
+             for (const auto &p : active_producers)
+             {
 
-            auto pay_itr = _producer_pay.find(p.value);
+                auto pay_itr = _producer_pay.find(p.value);
 
-            if (pay_itr == _producer_pay.end())
-            {
-               pay_itr = _producer_pay.emplace(p, [&](auto &pay) {
-                  pay.owner = p;
-                  pay.balance = earned_pay;
-               });
-            }
-            else
-            {
-               _producer_pay.modify(pay_itr, same_payer, [&](auto &pay) {
-                  pay.balance += earned_pay;
-               });
-            }
+                if (pay_itr == _producer_pay.end())
+                {
+                   pay_itr = _producer_pay.emplace(p, [&](auto &pay) {
+                      pay.owner = p;
+                      pay.balance = earned_pay;
+                   });
+                }
+                else
+                {
+                   _producer_pay.modify(pay_itr, same_payer, [&](auto &pay) {
+                      pay.balance += earned_pay;
+                   });
+                }
+             }
          }
         }
 
@@ -436,7 +446,6 @@ namespace eosiosystem {
         check(is_oracle(source) == true, "not a qualified oracle");
 
         int length = dataset.size();
-        check(length>0, "must supply more than zero dataset values");
 
         check(length<=_resource_config_state.dataset_batch_size, "must supply fewer dataset values");
         check(_resource_config_state.period_start == period_start, "period_start does not match current period_start");
