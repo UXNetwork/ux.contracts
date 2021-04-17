@@ -64,21 +64,21 @@ namespace eosiosystem {
       uint32_t daycount;
       uint64_t total_cpu_us;
       uint64_t total_net_words;
-      float net_percent_total;
-      float cpu_percent_total;
-      float use_cpu;
-      float use_net;
-      float ma_cpu;
-      float ma_net;
-      float ema_cpu;
-      float ema_net;
-      float ema_util_total;
-      float utility;
-      float utility_daily;
-      float bppay;
-      float bppay_daily;
-      float inflation;
-      float inflation_daily;
+      double net_percent_total;
+      double cpu_percent_total;
+      double use_cpu;
+      double use_net;
+      double ma_cpu;
+      double ma_net;
+      double ema_cpu;
+      double ema_net;
+      double ema_util_total;
+      double utility;
+      double utility_daily;
+      double bppay;
+      double bppay_daily;
+      double inflation;
+      double inflation_daily;
       asset utility_tokens;
       asset bppay_tokens;
       time_point_sec timestamp;
@@ -114,29 +114,29 @@ namespace eosiosystem {
 namespace ux {
 
   // calculate a moving average
-  static float calcMA(float sum, uint8_t timeperiod, float newVal)
+  static double calcMA(double sum, uint8_t timeperiod, double newVal)
   {
     auto rslt = sum + newVal;
     return rslt / (timeperiod);
   }
 
   // calculate an exponential moving average
-  static float calcEMA(float previousAverage, int timePeriod, float newVal)
+  static double calcEMA(double previousAverage, int timePeriod, double newVal)
   {
     auto mult = 2.0 / (timePeriod + 1.0);
     auto rslt = (newVal - previousAverage) * mult + previousAverage;
     return rslt;
   }
 
-  static float get_c(float x)
+  static double get_c(double x)
   { // model C[x] = -x * ln(x) * exp(1)
-    float p1 = -x;
-    float p2 = log(float(x));
-    float p3 = exp(1);
+    double p1 = -x;
+    double p2 = log(double(x));
+    double p3 = exp(1);
     return p1 * p2 * p3;
   }
 
-  static float round(float var)
+  static double round(double var)
   {
     //array of chars to store number as a string.
     char str[40];

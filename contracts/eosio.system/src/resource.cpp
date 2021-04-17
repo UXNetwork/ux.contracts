@@ -40,7 +40,7 @@ namespace eosiosystem {
         itr--;
 
         // Initial Inflation
-        float MP = _resource_config_state.max_pay_constant;
+        double MP = _resource_config_state.max_pay_constant;
 
         uint64_t draglimit = _resource_config_state.emadraglimit;
         uint64_t day_count = itr->daycount;
@@ -48,15 +48,15 @@ namespace eosiosystem {
         // restrict inflation to the first 3 years after resource model deployment (2 normal years + 1 leap year)
         check( day_count < 1096, "inflation period has ended");
 
-        float VT = pow(2, -(static_cast<double>(day_count) / 365)) * _resource_config_state.initial_value_transfer_rate;
+        double VT = pow(2, -(static_cast<double>(day_count) / 365)) * _resource_config_state.initial_value_transfer_rate;
 
-        float previousAverageCPU = itr->ma_cpu;
-        float previousAverageNET = itr->ma_net;
+        double previousAverageCPU = itr->ma_cpu;
+        double previousAverageNET = itr->ma_net;
 
 
         uint64_t system_max_cpu = static_cast<uint64_t>(_gstate.max_block_cpu_usage) * 2 * 60 * 60 * 24;
         check( total_cpu_us <= system_max_cpu, "measured cpu usage is greater than system total");
-        float usage_cpu = static_cast<float>(total_cpu_us) / system_max_cpu;
+        double usage_cpu = static_cast<double>(total_cpu_us) / system_max_cpu;
         print("usage_cpu:: ", std::to_string(usage_cpu), "\n");
 
         if(usage_cpu < 0.000001) {
@@ -66,21 +66,21 @@ namespace eosiosystem {
 
         uint64_t system_max_net = static_cast<uint64_t>(_gstate.max_block_net_usage) * 2 * 60 * 60 * 24;
         check( total_net_words * 8 <= system_max_net, "measured net usage is greater than system total");
-        float usage_net = static_cast<float>(total_net_words * 8) / system_max_net;
+        double usage_net = static_cast<double>(total_net_words * 8) / system_max_net;
 
         if(usage_net < 0.000001) {
             usage_net = 0.000001;
         }
         print("adjusted usage_net:: ", std::to_string(usage_cpu), "\n");
 
-        float net_percent_total = usage_net / (usage_net + usage_cpu);
-        float cpu_percent_total = usage_cpu / (usage_net + usage_cpu);
+        double net_percent_total = usage_net / (usage_net + usage_cpu);
+        double cpu_percent_total = usage_cpu / (usage_net + usage_cpu);
 
         print("system_max_net:: ", std::to_string(system_max_net), "\n");
         print("system_max_cpu:: ", std::to_string(system_max_cpu), "\n");
 
-        float ma_cpu_total = 0.0;
-        float ma_net_total = 0.0;
+        double ma_cpu_total = 0.0;
+        double ma_net_total = 0.0;
 
         itr = u_t.end();
         for (int i = 1; i < draglimit; i++)
@@ -100,11 +100,11 @@ namespace eosiosystem {
 
         print("period:: ", std::to_string(period), "\n");
 
-        float UTIL_CPU_MA = ux::calcMA(ma_cpu_total, period, usage_cpu);
-        float UTIL_NET_MA = ux::calcMA(ma_net_total, period, usage_net);
+        double UTIL_CPU_MA = ux::calcMA(ma_cpu_total, period, usage_cpu);
+        double UTIL_NET_MA = ux::calcMA(ma_net_total, period, usage_net);
 
-        float raw_util_cpu_ema;
-        float raw_util_net_ema;
+        double raw_util_cpu_ema;
+        double raw_util_net_ema;
 
         uint64_t pk = u_t.available_primary_key();
 
@@ -119,10 +119,10 @@ namespace eosiosystem {
             raw_util_cpu_ema = UTIL_CPU_MA;
             raw_util_net_ema = UTIL_NET_MA;
         }
-        float UTIL_CPU_EMA = raw_util_cpu_ema / 2;
-        float UTIL_NET_EMA = raw_util_net_ema / 2;
+        double UTIL_CPU_EMA = raw_util_cpu_ema / 2;
+        double UTIL_NET_EMA = raw_util_net_ema / 2;
 
-        float UTIL_TOTAL_EMA = (UTIL_CPU_EMA + UTIL_NET_EMA);
+        double UTIL_TOTAL_EMA = (UTIL_CPU_EMA + UTIL_NET_EMA);
 
         if(UTIL_TOTAL_EMA < 0.000001) {
             UTIL_CPU_EMA = UTIL_CPU_EMA / UTIL_TOTAL_EMA * 0.000001;
@@ -136,11 +136,11 @@ namespace eosiosystem {
             UTIL_TOTAL_EMA = 0.999999;
         }
 
-        float inflation = (1 - UTIL_TOTAL_EMA) / (1 - UTIL_TOTAL_EMA - ux::get_c(UTIL_TOTAL_EMA) * VT) - 1;
+        double inflation = (1 - UTIL_TOTAL_EMA) / (1 - UTIL_TOTAL_EMA - ux::get_c(UTIL_TOTAL_EMA) * VT) - 1;
 
-        float BP_U = MP * ux::get_c(UTIL_TOTAL_EMA);
-        float Upaygross = pow((1 + inflation), (1 - BP_U)) - 1;
-        float Bppay = inflation - Upaygross;
+        double BP_U = MP * ux::get_c(UTIL_TOTAL_EMA);
+        double Upaygross = pow((1 + inflation), (1 - BP_U)) - 1;
+        double Bppay = inflation - Upaygross;
 
         print("UTIL_CPU_MA:: ", std::to_string(UTIL_CPU_MA), "\n");
         print("UTIL_NET_MA:: ", std::to_string(UTIL_NET_MA), "\n");
@@ -157,19 +157,19 @@ namespace eosiosystem {
         const asset token_supply = eosio::token::get_supply(token_account, core_symbol().code());
 
         // Inflation waterfall
-        float Min_Upaynet = inflation * UTIL_TOTAL_EMA;
+        double Min_Upaynet = inflation * UTIL_TOTAL_EMA;
 
         print("Min_Upaynet:: ", std::to_string(Min_Upaynet), "\n");
 
-        float Waterfall_bp = inflation * (1 - UTIL_TOTAL_EMA);
+        double Waterfall_bp = inflation * (1 - UTIL_TOTAL_EMA);
 
         print("Waterfall_bp:: ", std::to_string(Waterfall_bp), "\n");
 
-        float Bppay_final = fmin(Bppay, Waterfall_bp);
+        double Bppay_final = fmin(Bppay, Waterfall_bp);
 
         print("Bppay_final:: ", std::to_string(Bppay_final), "\n");
 
-        float Uppaynet = inflation - Bppay_final;
+        double Uppaynet = inflation - Bppay_final;
 
         print("Uppaynet:: ", std::to_string(Uppaynet), "\n");
 
@@ -177,13 +177,13 @@ namespace eosiosystem {
 
         print("Daily_i_U:: ", std::to_string(Daily_i_U), "\n");
 
-        float utility_daily = (Uppaynet / inflation) * Daily_i_U;                               //allocate proportionally to Utility
+        double utility_daily = (Uppaynet / inflation) * Daily_i_U;                               //allocate proportionally to Utility
         print("utility_daily:: ", std::to_string(utility_daily), "\n");
 
-        float CPU_Pay = utility_daily * (UTIL_CPU_EMA / UTIL_TOTAL_EMA);
+        double CPU_Pay = utility_daily * (UTIL_CPU_EMA / UTIL_TOTAL_EMA);
         print("CPU_Pay:: ", std::to_string(CPU_Pay), "\n");
 
-        float NET_pay = utility_daily - CPU_Pay;
+        double NET_pay = utility_daily - CPU_Pay;
         print("NET_pay:: ", std::to_string(NET_pay), "\n");
 
         double bppay_daily = (Bppay_final / inflation) * Daily_i_U;                            //allocate proportionally to BPs
@@ -271,7 +271,7 @@ namespace eosiosystem {
         // check there are enough active producers
          auto active_producer_count = active_producers.size();
          check(active_producer_count > 0, "No active producers");
-         check(active_producer_count == _gstate.last_producer_schedule_size, "active_producers must equal last_producer_schedule_size");
+//         check(active_producer_count == _gstate.last_producer_schedule_size, "active_producers must equal last_producer_schedule_size");
 
          asset earned_pay = asset(itr_u->bppay_tokens.amount / active_producer_count, core_symbol());
          if (earned_pay.amount > 0) {
@@ -301,7 +301,7 @@ namespace eosiosystem {
     }
 
 
-    ACTION system_contract::initresource(uint16_t dataset_batch_size, uint16_t oracle_consensus_threshold, time_point_sec period_start, uint32_t period_seconds, float initial_value_transfer_rate, float max_pay_constant)
+    ACTION system_contract::initresource(uint16_t dataset_batch_size, uint16_t oracle_consensus_threshold, time_point_sec period_start, uint32_t period_seconds, double initial_value_transfer_rate, double max_pay_constant)
     {
         require_auth(get_self());
 
@@ -659,7 +659,7 @@ namespace eosiosystem {
 
                     // add oracle payment to resaccpay table
                     // todo - change to proper payment in future version
-//                    auto amount = (static_cast<float>(account_cpu) / total_cpu) * utility_tokens_amount;
+//                    auto amount = (static_cast<double>(account_cpu) / total_cpu) * utility_tokens_amount;
                     auto amount = 0;
                     asset payout = asset(amount, core_symbol());
                     auto ap_itr = ap_t.find(oracles[i].value);

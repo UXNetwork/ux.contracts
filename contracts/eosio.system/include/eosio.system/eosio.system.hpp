@@ -1177,7 +1177,7 @@ namespace eosiosystem {
          void setinflation( int64_t annual_rate, int64_t inflation_pay_factor, int64_t votepay_factor );
 
          // resource actions defined in resource.cpp
-         ACTION initresource(uint16_t dataset_batch_size, uint16_t oracle_consensus_threshold, time_point_sec period_start, uint32_t period_seconds, float initial_value_transfer_rate, float max_pay_constant);
+         ACTION initresource(uint16_t dataset_batch_size, uint16_t oracle_consensus_threshold, time_point_sec period_start, uint32_t period_seconds, double initial_value_transfer_rate, double max_pay_constant);
          ACTION settotalusg(name source, uint64_t total_cpu_us, uint64_t total_net_words, checksum256 all_data_hash, time_point_sec period_start);
          ACTION addactusg(name source, uint16_t dataset_id, const std::vector<metric>& dataset, time_point_sec period_start);
          ACTION nextperiod();
