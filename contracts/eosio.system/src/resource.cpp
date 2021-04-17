@@ -35,6 +35,8 @@ namespace eosiosystem {
     // todo - calculate payment for oracles in future version
     void system_contract::set_total(uint64_t total_cpu_us, uint64_t total_net_words, time_point_sec period_start)
     {
+        auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
+
         system_usage_history_table u_t(get_self(), get_self().value);
         auto itr = u_t.end();
         itr--;
@@ -224,10 +226,12 @@ namespace eosiosystem {
             h.bppay_tokens = bppay_tokens;
         });
 
+        _resource_config.set( _resource_config_state, get_self() );
     }
 
     // called from settotalusg 
     void system_contract::issue_inflation(time_point_sec period_start) {
+        auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
 
         system_usage_history_table u_t(get_self(), get_self().value);
         auto itr_u = u_t.end();
@@ -298,6 +302,7 @@ namespace eosiosystem {
         }
 
         _resource_config_state.last_period_inflation_print = period_start;
+        _resource_config.set( _resource_config_state, get_self() );
     }
 
 
@@ -305,7 +310,7 @@ namespace eosiosystem {
     {
         require_auth(get_self());
 
-        _resource_config_state = _resource_config.exists() ? _resource_config.get() : resource_config_state{};
+        auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
         _resource_config_state.dataset_batch_size = dataset_batch_size;
         _resource_config_state.oracle_consensus_threshold = oracle_consensus_threshold;
         _resource_config_state.period_start = period_start;
@@ -346,6 +351,8 @@ namespace eosiosystem {
     {
         require_auth(source);
         check(is_oracle(source) == true, "not a qualified oracle");
+
+        auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
 
         check(_resource_config_state.period_start == period_start, "period_start does not match current period_start");
 
@@ -438,6 +445,7 @@ namespace eosiosystem {
 
         } // end of inflation distribution
 
+        _resource_config.set( _resource_config_state, get_self() );
     }
 
     // adds the CPU used by the accounts included (for calling oracle)
@@ -448,6 +456,8 @@ namespace eosiosystem {
         check(is_oracle(source) == true, "not a qualified oracle");
 
         int length = dataset.size();
+
+        auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
 
         check(length<=_resource_config_state.dataset_batch_size, "must supply fewer dataset values");
         check(_resource_config_state.period_start == period_start, "period_start does not match current period_start");
@@ -570,12 +580,15 @@ namespace eosiosystem {
 
         }
 
+        _resource_config.set( _resource_config_state, get_self() );
     }
 
     // called by anyone from 48hrs after the current period start
     // clears tables and advances period start
     ACTION system_contract::nextperiod()
     {
+        auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
+
         auto current_seconds = current_time_point().sec_since_epoch();
         auto period_start_seconds = _resource_config_state.period_start.sec_since_epoch();
         check(current_seconds >= (period_start_seconds + (_resource_config_state.period_seconds)), "current resource period has not ended");
@@ -695,6 +708,8 @@ namespace eosiosystem {
             _resource_config_state.inflation_transferred = false;
             _resource_config_state.account_distributions_made.clear();
         }
+
+        _resource_config.set( _resource_config_state, get_self() );
     }
 
     // called by individual accounts to claim their distribution
@@ -769,11 +784,6 @@ namespace eosiosystem {
         while (f_itr != f_t.end()) {
             f_itr = f_t.erase(f_itr);
         }
-
-        // reset singleton state (can't remove)
-        _resource_config_state.submitting_oracles = {};
-        _resource_config_state.inflation_transferred = false;
-        _resource_config_state.account_distributions_made = {};
 
         if (_resource_config.exists()) _resource_config.remove();
     }

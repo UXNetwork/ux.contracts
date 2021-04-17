@@ -553,7 +553,6 @@ namespace eosiosystem {
 
          producer_pay_table       _producer_pay;
          resource_config_singleton _resource_config;
-         resource_config_state    _resource_config_state;
          feature_toggle_table     _features;
 
       public:

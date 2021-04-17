@@ -41,8 +41,6 @@ namespace eosiosystem {
       _gstate2 = _global2.exists() ? _global2.get() : eosio_global_state2{};
       _gstate3 = _global3.exists() ? _global3.get() : eosio_global_state3{};
       _gstate4 = _global4.exists() ? _global4.get() : get_default_inflation_parameters();
-
-      _resource_config_state = _resource_config.exists() ? _resource_config.get() : resource_config_state{};
    }
 
    eosio_global_state system_contract::get_default_parameters() {
@@ -69,8 +67,6 @@ namespace eosiosystem {
       _global2.set( _gstate2, get_self() );
       _global3.set( _gstate3, get_self() );
       _global4.set( _gstate4, get_self() );
-
-      _resource_config.set( _resource_config_state, get_self() );
    }
 
    void system_contract::setram( uint64_t max_ram_size ) {

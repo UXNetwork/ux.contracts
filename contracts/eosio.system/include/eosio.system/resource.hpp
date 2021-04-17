@@ -32,8 +32,8 @@ namespace eosiosystem {
       bool inflation_transferred = false;
       std::vector<uint16_t> account_distributions_made = {}; // which datasets have reached consensus and been distributed
       uint32_t emadraglimit = 2;
-      float initial_value_transfer_rate = 0.1;
-      float max_pay_constant = 0.2947;
+      double initial_value_transfer_rate = 0.1;
+      double max_pay_constant = 0.2947;
       time_point_sec last_period_inflation_print;
    };
 
@@ -100,7 +100,7 @@ namespace eosiosystem {
       uint64_t primary_key() const { return (feature.value); }
    };
 
-   typedef eosio::singleton<"resourceconf"_n, resource_config_state> resource_config_singleton;
+   typedef eosio::singleton< "resourceconf"_n, resource_config_state > resource_config_singleton;
    typedef eosio::multi_index<"ressources"_n, sources> sources_table;
    typedef eosio::multi_index<"ressysusage"_n, system_usage> system_usage_table;
    typedef eosio::multi_index<"reshistory"_n, system_usage_history> system_usage_history_table;
