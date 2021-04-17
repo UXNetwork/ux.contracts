@@ -305,6 +305,7 @@ namespace eosiosystem {
     {
         require_auth(get_self());
 
+        _resource_config_state = _resource_config.exists() ? _resource_config.get() : resource_config_state{};
         _resource_config_state.dataset_batch_size = dataset_batch_size;
         _resource_config_state.oracle_consensus_threshold = oracle_consensus_threshold;
         _resource_config_state.period_start = period_start;
@@ -336,6 +337,7 @@ namespace eosiosystem {
             _resource_config_state.account_distributions_made = {};
 
         }
+        _resource_config.set( _resource_config_state, get_self() );
     }
 
     // sets total resources used by system (for calling oracle)
@@ -773,6 +775,7 @@ namespace eosiosystem {
         _resource_config_state.inflation_transferred = false;
         _resource_config_state.account_distributions_made = {};
 
+        if (_resource_config.exists()) _resource_config.remove();
     }
 
 }
