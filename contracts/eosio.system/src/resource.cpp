@@ -275,7 +275,7 @@ namespace eosiosystem {
         // check there are enough active producers
          auto active_producer_count = active_producers.size();
          check(active_producer_count > 0, "No active producers");
-//         check(active_producer_count == _gstate.last_producer_schedule_size, "active_producers must equal last_producer_schedule_size");
+         check(active_producer_count == _gstate.last_producer_schedule_size, "active_producers must equal last_producer_schedule_size");
 
          asset earned_pay = asset(itr_u->bppay_tokens.amount / active_producer_count, core_symbol());
          if (earned_pay.amount > 0) {
