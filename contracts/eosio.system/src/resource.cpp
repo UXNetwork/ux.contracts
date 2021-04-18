@@ -61,8 +61,8 @@ namespace eosiosystem {
         double usage_cpu = static_cast<double>(total_cpu_us) / system_max_cpu;
         print("usage_cpu:: ", std::to_string(usage_cpu), "\n");
 
-        if(usage_cpu < 0.000001) {
-            usage_cpu = 0.000001;
+        if(usage_cpu < 0.00000000001) {
+            usage_cpu = 0.00000000001;
         }
         print("adjusted usage_cpu:: ", std::to_string(usage_cpu), "\n");
 
@@ -70,8 +70,8 @@ namespace eosiosystem {
         check( total_net_words * 8 <= system_max_net, "measured net usage is greater than system total");
         double usage_net = static_cast<double>(total_net_words * 8) / system_max_net;
 
-        if(usage_net < 0.000001) {
-            usage_net = 0.000001;
+        if(usage_net < 0.00000000001) {
+            usage_net = 0.00000000001;
         }
         print("adjusted usage_net:: ", std::to_string(usage_cpu), "\n");
 
@@ -126,16 +126,16 @@ namespace eosiosystem {
 
         double UTIL_TOTAL_EMA = (UTIL_CPU_EMA + UTIL_NET_EMA);
 
-        if(UTIL_TOTAL_EMA < 0.000001) {
-            UTIL_CPU_EMA = UTIL_CPU_EMA / UTIL_TOTAL_EMA * 0.000001;
-            UTIL_NET_EMA = UTIL_NET_EMA / UTIL_TOTAL_EMA * 0.000001;
-            UTIL_TOTAL_EMA = 0.000001;
+        if(UTIL_TOTAL_EMA < 0.00000000001) {
+            UTIL_CPU_EMA = UTIL_CPU_EMA / UTIL_TOTAL_EMA * 0.00000000001;
+            UTIL_NET_EMA = UTIL_NET_EMA / UTIL_TOTAL_EMA * 0.00000000001;
+            UTIL_TOTAL_EMA = 0.00000000001;
         }
 
-        if(UTIL_TOTAL_EMA > 0.999999) {
-            UTIL_CPU_EMA = UTIL_CPU_EMA / UTIL_TOTAL_EMA * 0.999999;
-            UTIL_NET_EMA = UTIL_NET_EMA / UTIL_TOTAL_EMA * 0.999999;
-            UTIL_TOTAL_EMA = 0.999999;
+        if(UTIL_TOTAL_EMA > 0.99999999999) {
+            UTIL_CPU_EMA = UTIL_CPU_EMA / UTIL_TOTAL_EMA * 0.99999999999;
+            UTIL_NET_EMA = UTIL_NET_EMA / UTIL_TOTAL_EMA * 0.99999999999;
+            UTIL_TOTAL_EMA = 0.99999999999;
         }
 
         double inflation = (1 - UTIL_TOTAL_EMA) / (1 - UTIL_TOTAL_EMA - ux::get_c(UTIL_TOTAL_EMA) * VT) - 1;
