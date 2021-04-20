@@ -253,14 +253,13 @@ namespace eosiosystem {
                 issue_act.send(get_self(), inflation, "issue daily inflation");
             }
          }
-         {
-            token::transfer_action transfer_act{token_account, {{get_self(), active_permission}}};
-            if (itr_u->bppay_tokens.amount > 0) {
-                transfer_act.send(get_self(), bpay_account, itr_u->bppay_tokens, "producer daily");
-            }
-            if (itr_u->utility_tokens.amount > 0) {
-                transfer_act.send(get_self(), upay_account, itr_u->utility_tokens, "usage daily");
-            }
+
+         token::transfer_action transfer_act{token_account, {{get_self(), active_permission}}};
+         if (itr_u->bppay_tokens.amount > 0) {
+            transfer_act.send(get_self(), bpay_account, itr_u->bppay_tokens, "producer daily");
+         }
+         if (itr_u->utility_tokens.amount > 0) {
+            transfer_act.send(get_self(), upay_account, itr_u->utility_tokens, "usage daily");
          }
 
          std::vector<name> active_producers;
@@ -672,24 +671,22 @@ namespace eosiosystem {
                         });
                     }
 
-                    // add oracle payment to resaccpay table
-                    // todo - change to proper payment in future version
-//                    auto amount = (static_cast<double>(account_cpu) / total_cpu) * utility_tokens_amount;
-                    auto amount = 0;
-                    asset payout = asset(amount, core_symbol());
-                    auto ap_itr = ap_t.find(oracles[i].value);
-                    if (ap_itr == ap_t.end()) {
-                        ap_t.emplace(get_self(), [&](auto& t) {
-                            t.account = oracles[i];
-                            t.balance = payout;
-                            t.timestamp = _resource_config_state.period_start;
-                        });
-                    } else {
-                        ap_t.modify(ap_itr, get_self(), [&](auto& t) {
-                            t.balance += payout;
-                            t.timestamp = _resource_config_state.period_start;
-                        });
-                    }
+                    // // todo - add oracle payment in future version
+                    // auto amount = 0;
+                    // asset payout = asset(amount, core_symbol());
+                    // auto ap_itr = ap_t.find(oracles[i].value);
+                    // if (ap_itr == ap_t.end()) {
+                    //     ap_t.emplace(get_self(), [&](auto& t) {
+                    //         t.account = oracles[i];
+                    //         t.balance = payout;
+                    //         t.timestamp = _resource_config_state.period_start;
+                    //     });
+                    // } else {
+                    //     ap_t.modify(ap_itr, get_self(), [&](auto& t) {
+                    //         t.balance += payout;
+                    //         t.timestamp = _resource_config_state.period_start;
+                    //     });
+                    // }
 
                 }
             }
@@ -716,12 +713,11 @@ namespace eosiosystem {
     ACTION system_contract::claimdistrib(name account)
     {
         require_auth(account);
-    // check(!_resource_config_state.locked, "cannot claim while inflation calculation is running");
 
         account_pay_table a_t(get_self(), get_self().value);
         auto itr = a_t.find(account.value);
-        check(itr != a_t.end(), "account not found");
-        check(itr->balance != asset( 0, core_symbol() ), "zero balance to claim");
+        check(itr != a_t.end(), "account balance not found");
+        check(itr->balance != asset( 0, core_symbol() ), "no balance to claim");
 
         auto feature_itr = _features.find("resource"_n.value);
         bool resource_active = feature_itr == _features.end() ? false : feature_itr->active;
