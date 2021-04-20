@@ -553,7 +553,6 @@ namespace eosiosystem {
 
          producer_pay_table       _producer_pay;
          resource_config_singleton _resource_config;
-         feature_toggle_table     _features;
 
       public:
          static constexpr eosio::name active_permission{"active"_n};
@@ -1181,7 +1180,7 @@ namespace eosiosystem {
          ACTION addactusg(name source, uint16_t dataset_id, const std::vector<metric>& dataset, time_point_sec period_start);
          ACTION nextperiod();
          ACTION claimdistrib(name account);
-         ACTION activatefeat(name feature);
+         ACTION resactivate(bool active);
          ACTION clrresource();
 
           // resource helper functions defined in resource.cpp

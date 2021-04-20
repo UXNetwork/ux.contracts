@@ -27,7 +27,6 @@ try
 
    // activate chain and vote for producers
    active_and_vote_producers();
-   activatefeat(N(resource));
    produce_blocks(2);
 
    long period_start_sec = getSecondsSinceEpochUTC("2020-10-01 00:00:00");
@@ -41,6 +40,7 @@ try
 
    // allow transactions to run
    initresource(dataset_batch_size, oracle_consensus_threshold, period_start, period_seconds, initial_value_transfer_rate, max_pay_constant);
+   resactivate(true);
    produce_blocks(2);
 
    fc::variant usage_data_vo_50 = json_from_file_or_string("./tests/usage_data/usage_data_50.json");
@@ -219,7 +219,6 @@ try
 
    // activate chain and vote for producers
    active_and_vote_producers();
-   activatefeat(N(resource));
    produce_blocks(2);
 
    long period_start_sec = getSecondsSinceEpochUTC("2020-10-01 00:00:00");
@@ -233,6 +232,7 @@ try
 
    // allow transactions to run
    initresource(dataset_batch_size, oracle_consensus_threshold, period_start, period_seconds, initial_value_transfer_rate, max_pay_constant);
+   resactivate(true);
    produce_blocks(2);
 
    fc::variant usage_data_vo = json_from_file_or_string("./tests/usage_data/usage_data_80.json");
@@ -287,7 +287,6 @@ try
 
    // activate chain and vote for producers
    active_and_vote_producers();
-   activatefeat(N(resource));
    produce_blocks(2);
 
    long period_start_sec = getSecondsSinceEpochUTC("2020-10-01 00:00:00");
@@ -301,6 +300,7 @@ try
 
    // allow transactions to run
    initresource(dataset_batch_size, oracle_consensus_threshold, period_start, period_seconds, initial_value_transfer_rate, max_pay_constant);
+   resactivate(true);
    produce_blocks(2);
 
    asset pre_balance = get_token_supply();
@@ -371,7 +371,6 @@ try
 
    // activate chain and vote for producers
    active_and_vote_producers();
-   activatefeat(N(resource));
    produce_blocks(2);
 
    long period_start_sec = getSecondsSinceEpochUTC("2020-10-01 00:00:00");
@@ -385,6 +384,7 @@ try
 
    // allow transactions to run
    initresource(dataset_batch_size, oracle_consensus_threshold, period_start, period_seconds, initial_value_transfer_rate, max_pay_constant);
+   resactivate(true);
    produce_blocks(2);
 
    asset pre_balance = get_token_supply();
@@ -455,7 +455,6 @@ try
 
    // activate chain and vote for producers
    active_and_vote_producers();
-   activatefeat(N(resource));
    produce_blocks(2);
 
    long period_start_sec = getSecondsSinceEpochUTC("2020-10-01 00:00:00");
@@ -469,6 +468,7 @@ try
 
    // allow transactions to run
    initresource(dataset_batch_size, oracle_consensus_threshold, period_start, period_seconds, initial_value_transfer_rate, max_pay_constant);
+   resactivate(true);
    produce_blocks(2);
 
    asset pre_balance = get_token_supply();

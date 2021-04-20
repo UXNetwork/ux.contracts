@@ -35,6 +35,7 @@ namespace eosiosystem {
       double initial_value_transfer_rate = 0.1;
       double max_pay_constant = 0.2947;
       time_point_sec last_period_inflation_print;
+      bool active = false;
    };
 
    // holds the points score of oracles (based on commit-reveal and modal hash matches)
@@ -93,19 +94,11 @@ namespace eosiosystem {
       uint64_t primary_key() const { return (account.value); }
    };
 
-   struct [[eosio::table, eosio::contract("eosio.system")]] feature_toggle
-   {
-      name feature;
-      bool active = false;
-      uint64_t primary_key() const { return (feature.value); }
-   };
-
    typedef eosio::singleton< "resourceconf"_n, resource_config_state > resource_config_singleton;
    typedef eosio::multi_index<"ressources"_n, sources> sources_table;
    typedef eosio::multi_index<"ressysusage"_n, system_usage> system_usage_table;
    typedef eosio::multi_index<"reshistory"_n, system_usage_history> system_usage_history_table;
    typedef eosio::multi_index<"resaccpay"_n, account_pay> account_pay_table;
-   typedef eosio::multi_index<"feattoggle"_n, feature_toggle> feature_toggle_table;
    typedef eosio::multi_index<"resusagedata"_n, datasets, 
             indexed_by<"hash"_n, const_mem_fun<datasets, checksum256, &datasets::by_hash>>> datasets_table;
 

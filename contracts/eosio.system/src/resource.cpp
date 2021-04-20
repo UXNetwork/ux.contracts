@@ -237,21 +237,16 @@ namespace eosiosystem {
         auto itr_u = u_t.end();
         itr_u--;
 
-        auto feature_itr = _features.find("resource"_n.value);
-        bool resource_active = feature_itr == _features.end() ? false : feature_itr->active;
-        if(resource_active) {
-         {
-            asset inflation = itr_u->bppay_tokens + itr_u->utility_tokens;
+         asset inflation = itr_u->bppay_tokens + itr_u->utility_tokens;
 
-            // defensive measure to cap daily inflation at 1.5m UTX
-            asset cap = asset(10000, core_symbol()) * 1500000;
+         // defensive measure to cap daily inflation at 1.5m UTX
+         asset cap = asset(10000, core_symbol()) * 1500000;
 
-            check(inflation <= cap, "period inflation cap exceeded");
+         check(inflation <= cap, "period inflation cap exceeded");
 
-            if (inflation.amount > 0) {
-                token::issue_action issue_act{token_account, {{get_self(), active_permission}}};
-                issue_act.send(get_self(), inflation, "issue daily inflation");
-            }
+         if (inflation.amount > 0) {
+            token::issue_action issue_act{token_account, {{get_self(), active_permission}}};
+            issue_act.send(get_self(), inflation, "issue daily inflation");
          }
 
          token::transfer_action transfer_act{token_account, {{get_self(), active_permission}}};
@@ -298,7 +293,6 @@ namespace eosiosystem {
                 }
              }
          }
-        }
 
         _resource_config_state.last_period_inflation_print = period_start;
         _resource_config.set( _resource_config_state, get_self() );
@@ -317,6 +311,7 @@ namespace eosiosystem {
         _resource_config_state.initial_value_transfer_rate = initial_value_transfer_rate;
         _resource_config_state.max_pay_constant = max_pay_constant;
         _resource_config_state.last_period_inflation_print = time_point_sec();
+        _resource_config_state.active = false;
 
         system_usage_history_table u_t(get_self(), get_self().value);
         if (u_t.begin() == u_t.end()) {
@@ -352,6 +347,8 @@ namespace eosiosystem {
         check(is_oracle(source) == true, "not a qualified oracle");
 
         auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
+
+        check(_resource_config_state.active, "resource model not active");
 
         check(_resource_config_state.period_start == period_start, "period_start does not match current period_start");
 
@@ -457,6 +454,8 @@ namespace eosiosystem {
         int length = dataset.size();
 
         auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
+
+        check(_resource_config_state.active, "resource model not active");
 
         check(length<=_resource_config_state.dataset_batch_size, "must supply fewer dataset values");
         check(_resource_config_state.period_start == period_start, "period_start does not match current period_start");
@@ -587,6 +586,8 @@ namespace eosiosystem {
     ACTION system_contract::nextperiod()
     {
         auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
+
+        check(_resource_config_state.active, "resource model not active");
 
         auto current_seconds = current_time_point().sec_since_epoch();
         auto period_start_seconds = _resource_config_state.period_start.sec_since_epoch();
@@ -719,31 +720,33 @@ namespace eosiosystem {
         check(itr != a_t.end(), "account balance not found");
         check(itr->balance != asset( 0, core_symbol() ), "no balance to claim");
 
-        auto feature_itr = _features.find("resource"_n.value);
-        bool resource_active = feature_itr == _features.end() ? false : feature_itr->active;
-        if(resource_active)
-        {
-            token::transfer_action transfer_act{token_account, {{upay_account, active_permission}, {account, active_permission}}};
-            transfer_act.send(upay_account, account, itr->balance, "utility reward");
-        }
+        token::transfer_action transfer_act{token_account, {{upay_account, active_permission}, {account, active_permission}}};
+        transfer_act.send(upay_account, account, itr->balance, "utility reward");
         itr = a_t.erase(itr);
     }
 
-    ACTION system_contract::activatefeat(name feature) {
+    // activate/deactivate resource model inflation
+    ACTION system_contract::resactivate(bool active) {
         require_auth(get_self());
-        feature_toggle_table f_t(get_self(), get_self().value);
 
-        auto itr = f_t.find(feature.value);
-        check(itr == f_t.end(), "feature already active");
+        auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
 
-        f_t.emplace(get_self(), [&](auto &f) {
-            f.feature = feature;
-            f.active = true;
-        });
+        // check active state isn't already as requested
+        if (active) {
+            check(!_resource_config_state.active, "resource model already active");
+        } else {
+            check(_resource_config_state.active, "resource model already inactive");
+        }
+
+        _resource_config_state.active = active;
+        _resource_config.set( _resource_config_state, get_self() );
     }
 
     ACTION system_contract::clrresource() {
         require_auth(get_self());
+
+        auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
+        check(!_resource_config_state.active, "must deactivate before clearing");
 
         system_usage_history_table uh_t(get_self(), get_self().value);
         auto uh_itr = uh_t.begin();
@@ -773,12 +776,6 @@ namespace eosiosystem {
         auto s_itr = s_t.begin();
         while (s_itr != s_t.end()) {
             s_itr = s_t.erase(s_itr);
-        }
-
-        feature_toggle_table f_t(get_self(), get_self().value);
-        auto f_itr = f_t.begin();
-        while (f_itr != f_t.end()) {
-            f_itr = f_t.erase(f_itr);
         }
 
         if (_resource_config.exists()) _resource_config.remove();

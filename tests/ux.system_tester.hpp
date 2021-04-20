@@ -1073,9 +1073,9 @@ namespace eosio_system
          return data.empty() ? fc::variant() : abi_ser.binary_to_variant("system_usage_history", data, abi_serializer_max_time);
       }
 
-      action_result activatefeat(name feature)
+      action_result resactivate(bool active)
       {
-         return push_action(N(eosio), N(activatefeat), mvo()("feature", feature));
+         return push_action(N(eosio), N(resactivate), mvo()("active", active));
       }
 
       action_result initresource(uint16_t dataset_batch_size, uint16_t oracle_consensus_threshold, time_point_sec period_start, uint32_t period_seconds, float initial_value_transfer_rate, float max_pay_constant)

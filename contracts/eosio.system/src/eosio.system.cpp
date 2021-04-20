@@ -33,8 +33,7 @@ namespace eosiosystem {
     _rexorders(get_self(), get_self().value),
 
     _producer_pay(get_self(), get_self().value),
-    _resource_config(get_self(), get_self().value),
-    _features(get_self(), get_self().value)
+    _resource_config(get_self(), get_self().value)
 
    {
       _gstate  = _global.exists() ? _global.get() : get_default_parameters();
