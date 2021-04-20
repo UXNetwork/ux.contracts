@@ -244,6 +244,26 @@ namespace eosiosystem {
 
          check(inflation <= cap, "period inflation cap exceeded");
 
+         // get max_supply of core token so can reduce inflation tokens to reach it if close
+         stats statstable( token_account, core_symbol().code().raw());
+         const auto& st = statstable.get(core_symbol().code().raw());
+         asset supply_remaining = st.max_supply - st.supply;
+         check(supply_remaining.amount > 0, "cannot exceed max token supply");
+
+         if (inflation > supply_remaining) {
+
+            // reduce tokens bp and utiltity tokens proportionally
+            asset new_bppay_tokens = asset(static_cast<double>(itr_u->bppay_tokens.amount) / static_cast<double>(inflation.amount) * static_cast<double>(supply_remaining.amount), core_symbol());
+            asset new_utility_tokens = supply_remaining - new_bppay_tokens;
+
+            // update table data (token values only)
+            inflation = new_bppay_tokens + new_utility_tokens;
+            u_t.modify(itr_u, same_payer, [&](auto &h) {
+                h.bppay_tokens = new_bppay_tokens;
+                h.utility_tokens = new_utility_tokens;
+            });
+         }
+
          if (inflation.amount > 0) {
             token::issue_action issue_act{token_account, {{get_self(), active_permission}}};
             issue_act.send(get_self(), inflation, "issue daily inflation");

@@ -94,6 +94,14 @@ namespace eosiosystem {
       uint64_t primary_key() const { return (account.value); }
    };
 
+   // for getting max_supply of UTX token contract
+   struct [[eosio::table("stats"), eosio::contract("eosio.token")]] currency_stats {
+      asset    supply;
+      asset    max_supply;
+      name     issuer;
+      uint64_t primary_key()const { return supply.symbol.code().raw(); }
+   };
+
    typedef eosio::singleton< "resourceconf"_n, resource_config_state > resource_config_singleton;
    typedef eosio::multi_index<"ressources"_n, sources> sources_table;
    typedef eosio::multi_index<"ressysusage"_n, system_usage> system_usage_table;
@@ -101,6 +109,7 @@ namespace eosiosystem {
    typedef eosio::multi_index<"resaccpay"_n, account_pay> account_pay_table;
    typedef eosio::multi_index<"resusagedata"_n, datasets, 
             indexed_by<"hash"_n, const_mem_fun<datasets, checksum256, &datasets::by_hash>>> datasets_table;
+   typedef eosio::multi_index< "stat"_n, currency_stats > stats;
 
 }
 

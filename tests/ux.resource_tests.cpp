@@ -564,4 +564,56 @@ try
 FC_LOG_AND_RETHROW()
 **/
 
+// BOOST_FIXTURE_TEST_CASE(test_exceeding_max_supply, ux_system_tester)
+// try
+// {
+//    uint32_t day = 0;
+//    using namespace std;
+//    transfer(config::system_account_name, N(alice1111111), ram_core_sym::from_string("30.0000"), config::system_account_name);
+//    produce_blocks(2);
+//    // jump to UX start date
+//    skipAhead(getSecondsSinceEpochUTC("2020-10-01 00:00:00"));
+
+//    // activate chain and vote for producers
+//    active_and_vote_producers();
+//    produce_blocks(2);
+
+//    long period_start_sec = getSecondsSinceEpochUTC("2020-10-01 00:00:00");
+//    time_point_sec period_start = time_point_sec(period_start_sec);
+
+//    uint16_t dataset_batch_size = 5;
+//    uint16_t oracle_consensus_threshold = 1;
+//    uint32_t period_seconds = 60 * 60 * 24;
+//    float initial_value_transfer_rate = 0.1;
+//    float max_pay_constant = 0.2947;
+
+//    // extra extra supply
+//    issue(asset(1000000000000, eosio::chain::symbol::from_string("4,UTX")));
+
+//    // allow transactions to run
+//    initresource(dataset_batch_size, oracle_consensus_threshold, period_start, period_seconds, initial_value_transfer_rate, max_pay_constant);
+//    resactivate(true);
+//    produce_blocks(2);
+
+//    for (int i = 0; i < 365 * 3; i++)
+//    {
+//       dayCycle("./tests/usage_data/usage_data_100.json", period_start_sec, 5);
+//       period_start_sec += 86400;
+//       skipAhead(period_start_sec);
+//       day++;
+//       BOOST_REQUIRE_EQUAL(success(), nextperiod(N(defproducerb)));
+//       auto res_history = get_resource_history(day);
+//       auto utility_tokens = res_history["utility_tokens"];
+//       auto bppay_tokens = res_history["bppay_tokens"];
+//       auto inflation = res_history["inflation"];
+//       cout << "Day " << day;
+//       cout << " Inf: " << inflation;
+//       cout << " BP Tokens Issued: " << bppay_tokens;
+//       cout << " Utility Tokens Issued: " << utility_tokens;
+//       cout << " Supply: " << get_token_supply();
+//       cout << "\n";
+//    }
+// }
+// FC_LOG_AND_RETHROW()
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -51,13 +51,13 @@ namespace eosio_system
       void create_core_token(symbol core_symbol = symbol{UX_CORE_SYM}, symbol ram_core_symbol = symbol{RAM_CORE_SYM})
       {
          FC_ASSERT(core_symbol.decimals() == 4, "create_core_token assumes core token has 4 digits of precision");
-         create_currency(N(eosio.token), config::system_account_name, asset(100000000000000, core_symbol));
-         issue(asset(10000000000000, core_symbol));
-         BOOST_REQUIRE_EQUAL(asset(10000000000000, core_symbol), get_balance("eosio", core_symbol));
+         create_currency(N(eosio.token), config::system_account_name, asset(25000000000000, core_symbol));
+         issue(asset(16392589380000, core_symbol));
+         BOOST_REQUIRE_EQUAL(asset(16392589380000, core_symbol), get_balance("eosio", core_symbol));
 
-         create_currency(N(eosio.token), config::system_account_name, asset(100000000000000, ram_core_symbol));
-         issue(asset(10000000000000, ram_core_symbol));
-         BOOST_REQUIRE_EQUAL(asset(10000000000000, ram_core_symbol), get_balance("eosio", ram_core_symbol));
+         create_currency(N(eosio.token), config::system_account_name, asset(25000000000000, ram_core_symbol));
+         issue(asset(16392589380000, ram_core_symbol));
+         BOOST_REQUIRE_EQUAL(asset(16392589380000, ram_core_symbol), get_balance("eosio", ram_core_symbol));
       }
 
       void deploy_contract(bool call_init = true)
@@ -96,7 +96,7 @@ namespace eosio_system
          create_account_with_resources(N(bpd), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
          create_account_with_resources(N(bpe), config::system_account_name, ram_core_sym::from_string("4.0000"), false);
 
-         BOOST_REQUIRE_EQUAL(ux_core_sym::from_string("1000000000.0000"), get_balance("eosio") + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram"));
+         BOOST_REQUIRE_EQUAL(ux_core_sym::from_string("1639258938.0000"), get_balance("eosio") + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram"));
       }
 
       enum class setup_level
