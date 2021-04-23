@@ -77,8 +77,8 @@ try
 
    // Test inflation transferred
 
-//   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 2860662061);
-   BOOST_TEST(get_balance(N(eosio.upay)).get_amount() == 2860662061);
+   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 4689364296);
+   BOOST_TEST(get_balance(N(eosio.upay)).get_amount() == 4689364296);
 
    // Test Fail on wrong period start
    long period_start_sec_bad = getSecondsSinceEpochUTC("2020-10-01 01:00:00");
@@ -106,8 +106,8 @@ try
    produce_blocks(2);
 
    // Theshold met ... verify inflation distributed
-//   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 2860662061);
-   BOOST_TEST(get_balance(N(eosio.upay)).get_amount() == 2860662061);
+   BOOST_TEST(get_balance(N(eosio.bpay)).get_amount() == 4689364296);
+   BOOST_TEST(get_balance(N(eosio.upay)).get_amount() == 4689364296);
    
 
    // Test fail on account overage
