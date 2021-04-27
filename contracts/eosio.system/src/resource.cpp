@@ -762,43 +762,45 @@ namespace eosiosystem {
         _resource_config.set( _resource_config_state, get_self() );
     }
 
-    ACTION system_contract::clrresource() {
-        require_auth(get_self());
+    #ifdef INCLUDECLEARACTIONS
+        ACTION system_contract::clrresource() {
+            require_auth(get_self());
 
-        auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
-        check(!_resource_config_state.active, "must deactivate before clearing");
+            auto _resource_config_state = _resource_config.get_or_create(_self, resource_config_state{});
+            check(!_resource_config_state.active, "must deactivate before clearing");
 
-        system_usage_history_table uh_t(get_self(), get_self().value);
-        auto uh_itr = uh_t.begin();
-        while (uh_itr != uh_t.end()) {
-            uh_itr = uh_t.erase(uh_itr);
+            system_usage_history_table uh_t(get_self(), get_self().value);
+            auto uh_itr = uh_t.begin();
+            while (uh_itr != uh_t.end()) {
+                uh_itr = uh_t.erase(uh_itr);
+            }
+
+            datasets_table d_t(get_self(), get_self().value);
+            auto dt_itr = d_t.begin();
+            while (dt_itr != d_t.end()) {
+                dt_itr = d_t.erase(dt_itr);
+            }
+
+            account_pay_table a_t(get_self(), get_self().value);
+            auto a_itr = a_t.begin();
+            while (a_itr != a_t.end()) {
+                a_itr = a_t.erase(a_itr);
+            }
+
+            system_usage_table u_t(get_self(), get_self().value);
+            auto u_itr = u_t.begin();
+            while (u_itr != u_t.end()) {
+                u_itr = u_t.erase(u_itr);
+            }
+
+            sources_table s_t(get_self(), get_self().value);
+            auto s_itr = s_t.begin();
+            while (s_itr != s_t.end()) {
+                s_itr = s_t.erase(s_itr);
+            }
+
+            if (_resource_config.exists()) _resource_config.remove();
         }
-
-        datasets_table d_t(get_self(), get_self().value);
-        auto dt_itr = d_t.begin();
-        while (dt_itr != d_t.end()) {
-            dt_itr = d_t.erase(dt_itr);
-        }
-
-        account_pay_table a_t(get_self(), get_self().value);
-        auto a_itr = a_t.begin();
-        while (a_itr != a_t.end()) {
-            a_itr = a_t.erase(a_itr);
-        }
-
-        system_usage_table u_t(get_self(), get_self().value);
-        auto u_itr = u_t.begin();
-        while (u_itr != u_t.end()) {
-            u_itr = u_t.erase(u_itr);
-        }
-
-        sources_table s_t(get_self(), get_self().value);
-        auto s_itr = s_t.begin();
-        while (s_itr != s_t.end()) {
-            s_itr = s_t.erase(s_itr);
-        }
-
-        if (_resource_config.exists()) _resource_config.remove();
-    }
+    #endif
 
 }

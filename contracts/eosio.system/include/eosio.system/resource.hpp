@@ -1,3 +1,6 @@
+// include following line to include clear action for testing deployment
+// #define INCLUDECLEARACTIONS
+
 #pragma once
 
 #include <math.h>
